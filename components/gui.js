@@ -1,4 +1,4 @@
-import {game_data} from '/src/game_data.js'
+import {game_data} from '../src/game_data.js'
 
 const src = 'https://www.pngkey.com/png/full/283-2831746_insta-icon-instagram.png'
 
