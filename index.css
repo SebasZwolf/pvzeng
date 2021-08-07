@@ -1,0 +1,22 @@
+body,html{margin : 0;}
+body{min-height: 100vh;}
+
+div{
+    box-sizing: border-box;
+}
+
+.gui-window{
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+
+    font-family: monospace;
+
+    overflow: auto;
+    user-select: none;
+}
+.gui-window > * {margin: 0}
+
+.game-window > :first-child:focus{
+    background-color: rgb(255, 219, 205);
+}
