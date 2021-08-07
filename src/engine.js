@@ -27,7 +27,7 @@ const prepDom = _d => {
     _gui.setAttribute('v-on:css', 'css');
 
     const _icss  = document.createElement("link");
-    _icss.href   = "src/init.css";
+    _icss.href   = "./src/init.css";
     _icss.type   = "text/css";
     _icss.rel    = "stylesheet";
 

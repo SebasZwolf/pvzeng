@@ -76,7 +76,7 @@ const Game = new Engine({
         h : 900
     },
     guiComponent,
-    css : '/index.css',
+    css : './index.css',
     store : {
         state: ()=>({}),
         mutations:  {},
