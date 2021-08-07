@@ -54,7 +54,7 @@ const scene = new BattleScene('test_scene', {
     },
     background : {
         cname : "def_level",
-        image : "./objects/assets/def_map.bmp",
+        image : "/pvzeng/objects/assets/def_map.bmp",
         play_area : {
             origin : { x : 24, y : 9},
             matrix : [
