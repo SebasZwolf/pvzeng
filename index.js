@@ -1,7 +1,7 @@
 import {Engine} from './src/engine.js'
 import 'https://unpkg.com/vuex@3.6.2/dist/vuex.js'
 import { Scene, BattleScene } from './src/ecs/scene.js';
-import guiComponent from '/components/gui.js'
+import guiComponent from './components/gui.js'
 import { almanac } from './objects/alamanc.js';
 import { game_data } from './src/game_data.js';
 
