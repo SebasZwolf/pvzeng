@@ -6,12 +6,18 @@ export const game_data = {
         pressed : [],
         released : []
     },
-    misc : {}
+    misc : {
+        drag : false,
+        drop : false,
+    }
 }
 
 export const back_data = {
     mouse : { pressed : [], released : [] },
     keyboard : { pressed : [], released : [] },
+    misc : {
+        drop : false
+    }
 }
 
 export const updateData = ()=>{
@@ -28,4 +34,13 @@ export const updateData = ()=>{
     
     back_data.mouse.pressed     = [];
     back_data.mouse.released    = [];
+
+    if(back_data.misc.drop) {
+        back_data.misc.drop = false;
+
+        game_data.misc.drag = false;
+        game_data.misc.drop = true;
+    }else
+        if(!game_data.misc.drop) game_data.misc.drop = false;
+    
 }

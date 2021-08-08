@@ -22,6 +22,11 @@ const prepDom = _d => {
     _canv.width     = _d.canvas.w;
     _canv.height    = _d.canvas.h;
     _canv.tabIndex  = 0;
+    
+    /*_canv.draggable = true;
+    _canv.ondrag = (e)=>console.log(e);
+    _canv.ondragstart = (e)=>console.log(e);
+    _canv.ondragover = (e)=>e.preventDefault();*/
 
     const _gui  = document.createElement("gui");
     _gui.setAttribute('v-on:css', 'css');
@@ -52,7 +57,7 @@ const defineInputs = (canv)=>{
     setTimeout(()=>{
         game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
         canv.focus();
-    }, 1);
+    });
 
     window.onresize = (e)=>game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
 
@@ -86,6 +91,10 @@ const defineInputs = (canv)=>{
         back_data.keyboard.released.push(code);
         //return false;
     }
+
+    /*canv.ondrop     = (e) =>console.log('drop: ', e);
+    canv.ondragover = (e)=>e.preventDefault();*/
+
     canv.oncontextmenu = (e)=>false;
 }
 
@@ -94,6 +103,10 @@ export class Engine{
         const addProm = (name)=>this.#proms.promises.push(new Promise((succ) => this.#proms[name] = succ));
         const endProm = (k, a)=>{this.#proms[k](a); this[k] = a};
         
+        this.#proms = {
+            promises : []
+        };
+
         addProm('App');
 
         const _r = {
@@ -138,23 +151,9 @@ export class Engine{
 
         defineInputs(canv);
     
-        this.Manager = new Manager(canv.getContext('2d'), _r.scene);
-
-        {
-            let succ;
-            this.ready = new Promise(s=>succ = s);
-
-            const ignite = ()=>{
-                this.Manager.ignite();
-            }
-
-            Promise.all(this.#proms.promises).then(()=>succ(ignite));
-        }
+        this.Manager    = new Manager(canv.getContext('2d'), _r.scene);
+        this.ready      = new Promise(s=>Promise.all(this.#proms.promises).then(()=>s(this.Manager.ignite)));
     }
 
-    #proms = {
-        promises : []
-    };
-
-    ready;
+    #proms;
 }

@@ -1,4 +1,5 @@
 import 'https://unpkg.com/js-quadtree@3.3.6/dist/index.js'
+import { game_data } from '../game_data.js';
 
 const lerp = (start, end, amt)=>Math.round((1-amt)*start+amt*end);
 const apro = (start, end, amt)=>start > end ? Math.max(0, start - amt) : Math.min(0, start + amt);
@@ -8,6 +9,11 @@ const process_background = (bdata)=>new Promise((resolve)=>{
     fetch(bdata.image).then(raw=>raw.blob()).then(blob=>{
         let img = document.createElement("img");
         img.src = URL.createObjectURL(blob);
+
+        bdata.play_area.size = {
+            x : bdata.play_area.cols *  bdata.play_area.cell_size.x,
+            y : bdata.play_area.rows *  bdata.play_area.cell_size.y,
+        }
 
         img.onload = ()=>resolve({
             ...bdata,
@@ -45,6 +51,7 @@ export class Scene{
                 ctx
             }
 
+            this.#onplay && this.#onplay();
             const main = ()=>{
                 id = window.requestAnimationFrame(main);
                                 
@@ -74,7 +81,7 @@ export class BattleScene extends Scene{
     constructor(tag, data){
         super(tag, {
             ...data,
-            step : ({ctx, brakes})=>{
+            step : async ({ctx, brakes})=>{
                 const all = [...this.entities.fixed, ...this.entities.freed, ...this.entities.projc];
                 const mov = [...this.entities.freed, ...this.entities.projc];
                     
@@ -101,19 +108,44 @@ export class BattleScene extends Scene{
 
                 //RENDER
                 {
+                    const sort = new Promise((succ)=>succ(all.sort((a,b)=>a.y - b.y)));
+
                     ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
                     if(this.background) {
+                        const bg = this.background;
                         ctx.save();
-                        const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.background.img.width),Math.ceil(ctx.canvas.height / this.background.img.height));
+                        const ratio =  Math.max(Math.ceil(ctx.canvas.width / bg.img.width),Math.ceil(ctx.canvas.height / bg.img.height));
                         
-                        const dx = Math.floor((ctx.canvas.width / ratio -  this.background.img.width) / 2),
-                            dy = Math.floor((ctx.canvas.height / ratio - this.background.img.height) / 2);
+                        const dx = Math.floor((ctx.canvas.width / ratio -  bg.img.width) / 2),
+                            dy = Math.floor((ctx.canvas.height / ratio - bg.img.height) / 2);
                         
                         ctx.scale(ratio, ratio);
-                        ctx.drawImage(this.background.img, dx, dy);
+                        ctx.drawImage(bg.img, dx, dy);
+                        
+                        const check = (c, x, w) => c > x && c < (x + w);
+                        
+
+                        if(
+                            game_data.misc.drag && 
+                            check(game_data.mouse.x, (bg.play_area.origin.x + dx) * ratio, bg.play_area.size.x * ratio) &&
+                            check(game_data.mouse.y, (bg.play_area.origin.y + dy) * ratio, bg.play_area.size.y * ratio)
+                            ){
+
+                            const
+                            xx = Math.floor((game_data.mouse.x - dx * ratio) / (ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + dx,
+                            yy = Math.floor((game_data.mouse.y - dy * ratio) / (ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + dy;
+                            
+                            ctx.fillStyle = 'rgba(255,250,200,.75)'
+                            
+                            ctx.fillRect(xx,bg.play_area.origin.y + dy,bg.play_area.cell_size.x,bg.play_area.size.y);
+                            ctx.fillRect(bg.play_area.origin.x + dx,yy,bg.play_area.size.x,bg.play_area.cell_size.x);
+                        }
+
                         ctx.restore();
+
                     }
-                    all.sort((a,b)=>a.y - b.y).forEach(e => e.draw(ctx));
+
+                    (await sort).forEach(e => e.draw(ctx));
                 }
             },
             stop : () => {

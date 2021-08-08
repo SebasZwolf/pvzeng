@@ -1,14 +1,13 @@
-import { Entity } from "./ecs/entity.js";
+import { Sprite } from "./ecs/sprite.js";
 import { Scene } from "./ecs/scene.js";
 
-import { back_data, game_data, updateData } from "./game_data.js";
+import { updateData } from "./game_data.js";
 
 export class Manager {
     constructor(ctx, scene) {
         this.current_scene  = scene ?? new Scene('def');
         this.current_scene.tick = updateData;
 
-        
         ctx.imageSmoothingEnabled = false;
 
         this.ignite = ()=>{

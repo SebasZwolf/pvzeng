@@ -1,4 +1,4 @@
-import {game_data} from '../src/game_data.js'
+import {game_data, back_data} from '../src/game_data.js'
 
 const src = 'https://www.pngkey.com/png/full/283-2831746_insta-icon-instagram.png'
 
@@ -22,7 +22,6 @@ const template = /*html*/`
             <span class="label">{{item}}</span>
         </div>
     </div>
-    <!--recursive :nodes="game_data" :level="0" :value="''"></recursive-->
 </div>`;
 
 const css = /*css*/`
@@ -188,23 +187,26 @@ export default{
 
             document.body.appendChild(node);
 
-            setTimeout(()=>{
-                document.body.removeChild(node);
-            });
+            setTimeout(()=>document.body.removeChild(node));
 
             e.dataTransfer.setDragImage(node,24,36);
+
+            game_data.misc.drag = true;
         },
         drop(e){
             e.preventDefault();
-            //this.$el.style.pointerEvents = null;
-            e.target.style = '';
+            e.target.style.pointerEvents = null;
             const data = e.dataTransfer.getData("text");
-            console.log(e);
+            
+            back_data.misc.drop = true;
         },
-        over(e){
+        over: (e)=>{
             e.preventDefault();
-            //console.log(e);
+
+            game_data.mouse.x = Math.ceil(e.offsetX * game_data.misc.ratio)
+            game_data.mouse.y = Math.ceil(e.offsetY * game_data.misc.ratio)
         }
+
     },
     mounted(){
         this.$emit('css', css);
@@ -212,6 +214,5 @@ export default{
     computed:{
     },
     components:{
-        //recursive : ()=>import(/* webpackPrefetch: true */ '/components/recursive.js')
     },
 }
