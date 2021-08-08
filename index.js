@@ -4,6 +4,8 @@ import { Scene, BattleScene } from './src/ecs/scene.js';
 import guiComponent from './components/gui.js'
 import { almanac } from './objects/alamanc.js';
 import { game_data } from './src/game_data.js';
+import { base } from './val.js';
+
 
 !Array.prototype.choose && Object.defineProperty(Array.prototype, 'choose', {
     value: function() { return this[Math.floor(Math.random()*this.length)]; }
@@ -54,7 +56,7 @@ const scene = new BattleScene('test_scene', {
     },
     background : {
         cname : "def_level",
-        image : "/objects/assets/def_map.bmp",
+        image : base + "/objects/assets/def_map.bmp",
         play_area : {
             origin : { x : 24, y : 9},
             matrix : [
