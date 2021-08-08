@@ -57,7 +57,7 @@ const defineInputs = (canv)=>{
     setTimeout(()=>{
         game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
         canv.focus();
-    });
+    }, 1000);
 
     window.onresize = (e)=>game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
 
