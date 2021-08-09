@@ -1,6 +1,8 @@
 export const game_data = {
     mouse:{
-        x :1, y: 1, button : {...[false,false,false,false,false], pressed : [], released : []}
+        //xx : 0, yy : 0,
+        x : 0, y : 0,
+        button : {...[false,false,false,false,false], pressed : [], released : []}
     },
     keyboard:{
         pressed : [],
@@ -9,8 +11,19 @@ export const game_data = {
     misc : {
         drag : false,
         drop : false,
+        ratio : 1
     }
 }
+
+/*Object.defineProperty(game_data.mouse, 'x',{
+    set : function (v) { this.xx = v; if(isNaN(v)) console.trace();},
+    get : function () { return this.xx; }
+})
+
+Object.defineProperty(game_data.mouse, 'y',{
+    set : function (v) { this.yy = v; if(isNaN(v)) console.trace();},
+    get : function () { return this.yy; }
+})*/
 
 export const back_data = {
     mouse : { pressed : [], released : [] },

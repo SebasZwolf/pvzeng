@@ -18,6 +18,7 @@ const draw =  function(ctx){
 
 const step = function(scn, {brakes}){
     if(game_data.mouse.button.pressed.includes(0)){
+        
         let mouse = game_data.mouse;
 
         const dx = (mouse.x - this.x);
@@ -31,7 +32,7 @@ const step = function(scn, {brakes}){
         this.vy -= dist * Math.sin(a);
     }
 
-    game_data.mouse.button.released.includes(0) && console.log('released');
+    //game_data.mouse.button.released.includes(0) && console.log('released');
 };
 
 const elements =(n)=>{
@@ -54,7 +55,7 @@ const scene = new BattleScene('test_scene', {
             }
         },...elements(10)]
     },
-    background : {
+    level : {
         cname : "def_level",
         image : base + "/objects/assets/def_map.bmp",
         play_area : {

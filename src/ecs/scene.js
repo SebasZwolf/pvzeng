@@ -17,7 +17,7 @@ const process_background = (bdata)=>new Promise((resolve)=>{
 
         img.onload = ()=>resolve({
             ...bdata,
-            img,
+            img
         });
     }).catch(e=>console.error(e));
 });
@@ -26,21 +26,19 @@ export class Scene{
     #onstep;
     #onstop;
     #onplay;
+    loading = null;
 
     constructor(tag, data = {}){
         this.tag = tag ?? 'def_scene';
 
-        const a = {
-            get a(){
-                return 10;
-            }
-        }
-
         this.#onstep = data.step;
         this.#onstop = data.stop;
         this.#onplay = data.play;
+        
+        this.play = ({ctx}) => new Promise(async resolve =>{
+            this.loading && await this.loading;
+            this.#onplay && this.#onplay(ctx);
 
-        this.play = ({ctx}) => new Promise(resolve =>{
             let id = 0;
             let stopped = false;
 
@@ -51,7 +49,7 @@ export class Scene{
                 ctx
             }
 
-            this.#onplay && this.#onplay();
+
             const main = ()=>{
                 id = window.requestAnimationFrame(main);
                                 
@@ -79,8 +77,18 @@ export class Scene{
 
 export class BattleScene extends Scene{
     constructor(tag, data){
+        console.log('BattleScene\'s been born!');
         super(tag, {
             ...data,
+            play : (ctx)=>{
+                const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.level.img.width),Math.ceil(ctx.canvas.height / this.level.img.height));
+
+                this.level.fit_data = {
+                    ratio,
+                    dx : Math.floor((ctx.canvas.width / ratio - this.level.img.width) / 2),
+                    dy : Math.floor((ctx.canvas.height / ratio - this.level.img.height) / 2)
+                }
+            },
             step : async ({ctx, brakes})=>{
                 const all = [...this.entities.fixed, ...this.entities.freed, ...this.entities.projc];
                 const mov = [...this.entities.freed, ...this.entities.projc];
@@ -111,38 +119,33 @@ export class BattleScene extends Scene{
                     const sort = new Promise((succ)=>succ(all.sort((a,b)=>a.y - b.y)));
 
                     ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-                    if(this.background) {
-                        const bg = this.background;
+                    if(this.level) {
+                        const bg = this.level;
                         ctx.save();
-                        const ratio =  Math.max(Math.ceil(ctx.canvas.width / bg.img.width),Math.ceil(ctx.canvas.height / bg.img.height));
+
+                        // const ratio = bg.fit_data.ratio;
+                        // const dx    = bg.fit_data.dx;
+                        // const dy    = bg.fit_data.dy;
+                        const fit = bg.fit_data;
                         
-                        const dx = Math.floor((ctx.canvas.width / ratio -  bg.img.width) / 2),
-                            dy = Math.floor((ctx.canvas.height / ratio - bg.img.height) / 2);
-                        
-                        ctx.scale(ratio, ratio);
-                        ctx.drawImage(bg.img, dx, dy);
-                        
+                        ctx.scale(fit.ratio, fit.ratio);
+                        ctx.drawImage(bg.img, fit.dx, fit.dy);
                         const check = (c, x, w) => c > x && c < (x + w);
                         
+                        if(/*false && */game_data.misc.drag && 
+                            check(game_data.mouse.x, (bg.play_area.origin.x + fit.dx) * fit.ratio, bg.play_area.size.x * fit.ratio) &&
+                            check(game_data.mouse.y, (bg.play_area.origin.y + fit.dy) * fit.ratio, bg.play_area.size.y * fit.ratio)){
 
-                        if(
-                            game_data.misc.drag && 
-                            check(game_data.mouse.x, (bg.play_area.origin.x + dx) * ratio, bg.play_area.size.x * ratio) &&
-                            check(game_data.mouse.y, (bg.play_area.origin.y + dy) * ratio, bg.play_area.size.y * ratio)
-                            ){
-
-                            const
-                            xx = Math.floor((game_data.mouse.x - dx * ratio) / (ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + dx,
-                            yy = Math.floor((game_data.mouse.y - dy * ratio) / (ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + dy;
+                            const xx = Math.floor((game_data.mouse.x - fit.dx * fit.ratio) / (fit.ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + fit.dx;
+                            const yy = Math.floor((game_data.mouse.y - fit.dy * fit.ratio) / (fit.ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + fit.dy;
                             
-                            ctx.fillStyle = 'rgba(255,250,200,.75)'
+                            ctx.fillStyle = 'rgba(255,250,200,.5)'
                             
-                            ctx.fillRect(xx,bg.play_area.origin.y + dy,bg.play_area.cell_size.x,bg.play_area.size.y);
-                            ctx.fillRect(bg.play_area.origin.x + dx,yy,bg.play_area.size.x,bg.play_area.cell_size.x);
+                            ctx.fillRect(xx,bg.play_area.origin.y + fit.dy,bg.play_area.cell_size.x,bg.play_area.size.y);
+                            ctx.fillRect(bg.play_area.origin.x + fit.dx,yy,bg.play_area.size.x,bg.play_area.cell_size.x);
                         }
 
                         ctx.restore();
-
                     }
 
                     (await sort).forEach(e => e.draw(ctx));
@@ -165,8 +168,10 @@ export class BattleScene extends Scene{
             projc : []
         };
 
-        process_background(data.background).then(
-            b=>this.background=b
-        );
+        (this.loading = Promise.all([
+            process_background(data.level)
+        ])).then(solve=>{
+            [this.level] = solve;
+        });
     }   
 } 
