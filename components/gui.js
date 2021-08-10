@@ -32,7 +32,7 @@ const template = /*html*/`
             <span>l l</span>
         </button>
     </div>
-    <div class="plant-deck" @wheel="wheel">
+    <div class="plant-deck" @wheel="({path, deltaY : dy})=>path[path.length - 8].scrollBy(0, dy)">
         <div class="plant-card" draggable="true" @dragstart="drag($event, index)" v-for="(item, index) in plants" :key="index" @click="seed_pick(index)">
             <div class="content">
                 <img src="${src}" draggable="false" style="height:107%; position: relative; top: -7%; display: inline-block;"/>
@@ -385,6 +385,7 @@ export default{
         flags,
         cflags : Math.round(flags / 2),
         progress : 10,
+        power : 0,
         money : 0,
         usables : [
             {
@@ -402,12 +403,11 @@ export default{
         ]
     }),
     methods:{
-        wheel: ({path, deltaY : dy})=>path[path.length - 8].scrollBy(0, dy),
         flagactive(i){
             return (i >= this.cflags )
         },
         seed_pick(i){
-            this.money += this.plants[i];
+            this.power += this.plants[i];
         },
         drag(e, id){
             this.$el.style.pointerEvents = 'initial';

@@ -54,10 +54,12 @@ const prepDom = _d => {
 };
 
 const defineInputs = (canv)=>{
-    setTimeout(()=>{
+    window.addEventListener("load",()=>{
         game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
         canv.focus();
-    }, 5);
+    },{
+        once: true
+    })
 
     window.onresize = (e)=>game_data.misc.ratio = Math.max(canv.width / canv.offsetWidth, canv.height / canv.offsetHeight);
 

@@ -1,1 +1,1 @@
-export const base = "/pvzeng"
+export const base = ""
