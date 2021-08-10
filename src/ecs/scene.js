@@ -119,22 +119,20 @@ export class BattleScene extends Scene{
                     const sort = new Promise((succ)=>succ(all.sort((a,b)=>a.y - b.y)));
 
                     ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-                    if(this.level) {
+                    if(true) {
                         const bg = this.level;
                         ctx.save();
 
-                        // const ratio = bg.fit_data.ratio;
-                        // const dx    = bg.fit_data.dx;
-                        // const dy    = bg.fit_data.dy;
                         const fit = bg.fit_data;
                         
                         ctx.scale(fit.ratio, fit.ratio);
                         ctx.drawImage(bg.img, fit.dx, fit.dy);
-                        const check = (c, x, w) => c > x && c < (x + w);
+
+                        const check = (c, w) => c >= 0 && c < w;
                         
-                        if(/*false && */game_data.misc.drag && 
-                            check(game_data.mouse.x, (bg.play_area.origin.x + fit.dx) * fit.ratio, bg.play_area.size.x * fit.ratio) &&
-                            check(game_data.mouse.y, (bg.play_area.origin.y + fit.dy) * fit.ratio, bg.play_area.size.y * fit.ratio)){
+                        if(game_data.misc.drag && 
+                            check(game_data.mouse.x - (bg.play_area.origin.x + fit.dx) * fit.ratio, bg.play_area.size.x * fit.ratio) &&
+                            check(game_data.mouse.y - (bg.play_area.origin.y + fit.dy) * fit.ratio, bg.play_area.size.y * fit.ratio)){
 
                             const xx = Math.floor((game_data.mouse.x - fit.dx * fit.ratio) / (fit.ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + fit.dx;
                             const yy = Math.floor((game_data.mouse.y - fit.dy * fit.ratio) / (fit.ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + fit.dy;

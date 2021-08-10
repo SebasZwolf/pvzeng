@@ -12,7 +12,6 @@ const template = /*html*/`
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
             <span class="label">{{money}}</span>
         </div>
-
         <div style="width: 100%; pointer-events: none; display: flex;">
             <div class="level-progress">
                 <div :style="{ width: progress + '%' }"><img src="${src}"/></div>
@@ -21,20 +20,19 @@ const template = /*html*/`
                 </div>
             </div>
         </div>
-
         <div class="ind">
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
             <span class="label">{{money}}</span>
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
         </div>
-        <button>
+        <button class="pvz-btn sq">
             <span>&#10148;</span>
         </button>
-        <button>
+        <button class="pvz-btn sq">
             <span>l l</span>
         </button>
     </div>
-    <div class="plant-deck">
+    <div class="plant-deck" @wheel="wheel">
         <div class="plant-card" draggable="true" @dragstart="drag($event, index)" v-for="(item, index) in plants" :key="index" @click="seed_pick(index)">
             <div class="content">
                 <img src="${src}" draggable="false" style="height:107%; position: relative; top: -7%; display: inline-block;"/>
@@ -43,9 +41,145 @@ const template = /*html*/`
             <span class="label">{{item}}</span>
         </div>
     </div>
+    <div class="bottom-deck">
+        <div style="flex: 1"></div>
+        <div class="usables">
+            <button class="pvz-btn cn" v-for="(item, index) in usables">
+                <span class="icon" :style="{backgroundColor : item.color}">{{item.icon}}</span>
+                <span class="cost">{{item.cost}}</span>
+                <span class="amnt">{{item.amount}}</span>
+            </button>
+        </div>
+        <button class="pvz-btn rd">
+            <span>&#10070;</span>
+        </button>
+    </div>
 </div>`;
 
 const css = /*css*/`
+.usables{
+    display: flex;
+    align-self: flex-end;
+    gap: 4px;
+    padding: 0 1em;
+}
+
+.bottom-deck{
+    min-height: 48px;
+    display: flex;
+    gap: 4px;
+}
+
+.pvz-btn{
+    position: relative;
+    box-sizing: border-box;
+    pointer-events: initial;
+
+    display: block;
+    border : solid 2px #113;
+    margin: auto;
+    
+    ---btnc : #7b9;
+}
+
+.pvz-btn.rd{
+    background-color: var(---btnc);
+    padding: 6px; border-radius : 50%;
+
+    box-shadow: 0px 1px 1px 2px inset #fff8, 0px -1px 1px 1px inset #245;
+}
+
+.pvz-btn.sq{
+    background-image: linear-gradient(to bottom right, #fff -10%, var(---btnc) 20%, var(---btnc) 42%, #245 52%);
+    padding : 3px; border-radius : 8px;
+}
+
+.pvz-btn.cn{
+    background-color: gold;
+    padding: 4px; border-radius : 50%;
+
+    box-shadow: 0px 1px 1px 2px inset #fff8, 0px -1px 1px 1px inset #245;
+    position: relative;
+    letter-spacing : -2px;
+}
+
+.pvz-btn > span{
+    white-space: nowrap;
+    display: block; 
+    font-size: 20px; line-height: 1; font-weight: 800; color : #fd1;
+}
+
+.pvz-btn.rd > span{
+    padding: 8px; width: 42px; aspect-ratio: 1/1;
+    border-radius: 50%;
+
+    border: 2px solid #113;
+    background-color : #5c6;
+    box-shadow: 0px 1px 2px 3px inset #394, 1px 2px 4px 3px inset #fffa, 0px -15px 10px -4px inset #af8;
+    text-shadow: 1px 0px 0px #942, 0px 1px 0px #942, -1px 0px 0px #942, 0px -1px 0px #942, 1px 2px 3px #000;
+}
+
+.pvz-btn.cn > span.icon{
+    padding: 8px; width: 36px; aspect-ratio: 1/1;
+    border-radius: 50%;
+
+    border: 2px solid #113;
+    box-shadow: 0px 1px 2px 1px inset #0008, 1px 2px 4px 3px inset #fff4, 0px -10px 10px 0px inset #fff4;
+
+    display: inline-flex; justify-content: center; align-items: center;
+    color: #0006; text-shadow: none;
+    font-size : 48px; line-height: 0;
+}
+
+.pvz-btn.cn > span.cost{
+    position: absolute;
+    bottom: -8px; right: 4px; left: 4px;
+
+    border: solid 1px #000;
+    background-color: #fff;
+    z-index: 1;
+    color: #000; font-weight: 600;
+    border-radius: 4px;
+
+}
+
+.pvz-btn.cn > span.amnt::before{
+    content: 'x';
+}
+.pvz-btn.cn > span.amnt{
+    position: absolute;
+    bottom: 50%; right: -20px; text-align: left; width: 40px;
+    z-index: 1;
+
+    color: #fff;
+    font-size: 16px;
+    text-shadow: 1px 0px 0px #000, 0px 1px 0px #000, -1px 0px 0px #000, 0px -1px 0px #000, 1px 2px 3px #000;
+}
+
+.pvz-btn.sq > span{
+    padding: 8px; min-width: 16px;
+
+    border: 1px solid var(---btnc);
+    border-top: 1px solid #9db;
+    border-left: 1px solid #9db;
+
+    border-radius : 4px;
+    background-color : var(---btnc);
+    
+    box-shadow: 0px 0px 3px 0px inset #0004;
+    text-shadow: 1px 0px 0px #942, 0px 1px 0px #942, -1px 0px 0px #942, 0px -1px 0px #942, 1px 2px 3px #000;
+}
+
+.pvz-btn:active:after{
+    content:'';
+    position: absolute;
+    top: 0; right: 0; left: 0; bottom: 0;
+
+    background-color: transparent;
+    box-shadow: 0 0 8px 8px inset #0428;
+    border-radius: inherit;
+}
+
 .level-progress{
     border: 6px solid #0008;
     padding: 2px 0px;
@@ -76,13 +210,12 @@ const css = /*css*/`
     letter-spacing: -1em;
 }
 
-.flagup{
-    transform: translate(0,-50%);
-}
 
 .level-progress > div > div::before{content: '⚑'; color: #f26; }
 .level-progress > div > div::after {content: '⚐'; color: #000; }
-.level-progress > div > .flagup::before{color: lime; vertical-align: sup}
+
+.flagup{transform: translate(0,-50%);}
+.flagup::before{color: lime !important}
 
 .level-progress > div:first-child{
     height: 100%;
@@ -104,60 +237,6 @@ const css = /*css*/`
 
     ---btnc : #7b9;
     gap: 4px;
-}
-
-.top-deck > button{
-    position: relative;
-
-    box-sizing: border-box;
-
-    display: block;
-    border : solid 2px #113;
-
-    padding : 3px;
-    margin: auto;
-
-    border-radius : 8px;
-    background-image: linear-gradient(to bottom right, #fff -10%, var(---btnc) 20%, var(---btnc) 42%, #245 52%);
-}
-
-.top-deck > button:active:after{
-    content:'';
-    position: absolute;
-    top: 0; right: 0; left: 0; bottom: 0;
-    
-    background-color: transparent;
-    box-shadow: 0 0 8px 8px inset #0428;
-    border-radius: 4px;
-}
-
-.top-deck > button > span{
-    white-space: nowrap;
-
-    display: block;
-    padding: 8px;
-    min-width: 16px;
-
-    font-size: 20px;
-    line-height: 1;
-    font-weight: 800;
-    color : #fd1;
-    
-    text-shadow:
-        +1px +0px +0px #942,
-        +0px +1px +0px #942,
-        -1px +0px +0px #942,
-        +0px -1px +0px #942,
-        +1px +2px +3px #000;
-
-    background-color : var(---btnc);
-    box-shadow: 0px 0px 3px 0px inset #0004;
-
-    border: 1px solid var(---btnc);
-    border-top: 1px solid #9db;
-    border-left: 1px solid #9db;
-
-    border-radius : 4px;
 }
 
 .top-deck > .ind{
@@ -198,8 +277,13 @@ const css = /*css*/`
     background-color: transparent;
 
     flex : 1;
-    width: 120px;
+    width: 125px;
 
+    padding-right: 15px;
+    padding-bottom: 2px;
+    overflow-x: visible;
+    overflow-y: hidden;
+    
     display: flex;
     flex-direction : column;
     gap: 6px;
@@ -207,6 +291,8 @@ const css = /*css*/`
 
 .plant-card {
     ---bc : #eed;
+
+    flex-shrink: 0;
 
     width: 100%;
     aspect-ratio: 20/10;
@@ -294,14 +380,29 @@ export default{
     data: ()=>({
         game_data, //IMPORTANT
         plants : [
-            100,200,200,75
+            100,200,200,75,10,20,10,15,75,85,60,75
         ],
         flags,
         cflags : Math.round(flags / 2),
         progress : 10,
         money : 0,
+        usables : [
+            {
+                color : '#9ee', cost : '100', amount : 1, icon : '❆'
+            },
+            {
+                color : '#fe3', cost : '120', amount : 2, icon : '⇡'
+            },
+            {
+                color : '#f86', cost : '175', amount : 0, icon : '☀'
+            },
+            {
+                color : '#86f', cost : '125', amount : 0, icon : '↯'
+            },
+        ]
     }),
     methods:{
+        wheel: ({path, deltaY : dy})=>path[path.length - 8].scrollBy(0, dy),
         flagactive(i){
             return (i >= this.cflags )
         },
