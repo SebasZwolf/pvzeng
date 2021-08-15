@@ -1,13 +1,16 @@
-import {Engine} from './src/engine.js'
+import './preparation.js';
+
 import 'https://unpkg.com/vuex@3.6.2/dist/vuex.js'
+
+import {Engine} from './src/engine.js'
 import { Scene, BattleScene } from './src/ecs/scene.js';
 import guiComponent from './components/gui.js'
-import { almanac } from './objects/alamanc.js';
+import { almanac as alm} from './objects/alamanc.js';
+
 import { game_data } from './src/game_data.js';
 
-!Array.prototype.choose && Object.defineProperty(Array.prototype, 'choose', {
-    value: function() { return this[Math.floor(Math.random()*this.length)]; }
-});
+
+const almanac = alm(game_data);
 
 const draw =  function(ctx){
     ctx.fillStyle = this.color;
