@@ -42,7 +42,7 @@ const elements =(n)=>{
     return arr;
 }
 
-const base = sebaszwolf.github.io === window.location.hostname ? '/pvzeng' : '';
+const base = 'sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '';
 
 const scene = new BattleScene('test_scene', {
     entities : {
