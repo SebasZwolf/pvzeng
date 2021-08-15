@@ -3,12 +3,13 @@ import './preparation.js';
 import 'https://unpkg.com/vuex@3.6.2/dist/vuex.js'
 
 import {Engine} from './src/engine.js'
+
 import { Scene, BattleScene } from './src/ecs/scene.js';
+
 import guiComponent from './components/gui.js'
 import { almanac as alm} from './objects/alamanc.js';
 
 import { game_data } from './src/game_data.js';
-
 
 const almanac = alm(game_data);
 
@@ -50,17 +51,19 @@ const base = 'sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '
 const scene = new BattleScene('test_scene', {
     entities : {
         fixed : [],
-        freed : [{
-            x:0, y:0, draw: ()=>{}, step:(scn)=>{
+        freed : elements(10),
+        projc : [],
+        control : {
+            step: (scn)=>{
                 game_data.keyboard.pressed.includes('Enter') && console.log(scn.quadtree.getTree())
             }
-        },...elements(10)]
+        }
     },
     level : {
         cname : "def_level",
         image : base + "/objects/assets/def_map.bmp",
         play_area : {
-            origin : { x : 24, y : 9},
+            origin : { x : 48, y : 27},
             matrix : [
                 1,1,1,0,1,0,0,0,0,
                 1,1,1,0,1,0,0,0,0,
@@ -70,9 +73,11 @@ const scene = new BattleScene('test_scene', {
             ],
             rows : 5,
             cols : 9,
-            cell_size : { x : 3, y : 3}
+            cell_size : { x : 6, y : 9}
         }
-    }
+    },
+    almanac,
+    DEBUG: true
 });
 
 const Game = new Engine({

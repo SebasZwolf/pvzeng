@@ -150,7 +150,7 @@ export class Engine{
 
         defineInputs(canv);
     
-        this.Manager    = new Manager(canv.getContext('2d'), _r.scene);
+        this.Manager    = new Manager(canv.getContext('2d'), _r.scene); 
         this.ready      = new Promise(s=>Promise.all(this.#proms.promises).then(()=>s(this.Manager.ignite)));
     }
 

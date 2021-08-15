@@ -12,7 +12,7 @@ const template = /*html*/`
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
             <span class="label">{{money}}</span>
         </div>
-        <div style="width: 100%; pointer-events: none; display: flex;">
+        <div style="width: 100%; display: flex;">
             <div class="level-progress">
                 <div :style="{ width: progress + '%' }"><img src="${src}"/></div>
                 <div>
@@ -269,10 +269,6 @@ const css = /*css*/`
     text-align: right;
 }
 
-.top-deck > *{
-    pointer-events: initial;
-}
-
 .plant-deck{
     background-color: transparent;
 
@@ -442,7 +438,6 @@ export default{
             game_data.mouse.x = Math.ceil(e.offsetX * game_data.misc.ratio);
             game_data.mouse.y = Math.ceil(e.offsetY * game_data.misc.ratio);
         }
-
     },
     mounted(){
         console.log(this.cflags, this.flags);

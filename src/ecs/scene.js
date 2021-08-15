@@ -34,6 +34,8 @@ export class Scene{
         this.#onstep = data.step;
         this.#onstop = data.stop;
         this.#onplay = data.play;
+
+        this.DEBUG = data.DEBUG;
         
         this.play = ({ctx}) => new Promise(async resolve =>{
             this.loading && await this.loading;
@@ -82,7 +84,6 @@ export class BattleScene extends Scene{
             ...data,
             play : (ctx)=>{
                 const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.level.img.width),Math.ceil(ctx.canvas.height / this.level.img.height));
-
                 this.level.fit_data = {
                     ratio,
                     dx : Math.floor((ctx.canvas.width / ratio - this.level.img.width) / 2),
@@ -102,6 +103,7 @@ export class BattleScene extends Scene{
                 }
                 
                 all.forEach(e => e.step( this, d_step));
+                if(this.entities.control.step) this.entities.control.step();
 
                 //PHYSICS
                 mov.forEach(e=>{
@@ -119,11 +121,11 @@ export class BattleScene extends Scene{
                     const sort = new Promise((succ)=>succ(all.sort((a,b)=>a.y - b.y)));
 
                     ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-                    if(true) {
+                    {
                         const bg = this.level;
-                        ctx.save();
-
                         const fit = bg.fit_data;
+
+                        ctx.save();
                         
                         ctx.scale(fit.ratio, fit.ratio);
                         ctx.drawImage(bg.img, fit.dx, fit.dy);
@@ -132,21 +134,59 @@ export class BattleScene extends Scene{
                         
                         if(game_data.misc.drag && 
                             check(game_data.mouse.x - (bg.play_area.origin.x + fit.dx) * fit.ratio, bg.play_area.size.x * fit.ratio) &&
-                            check(game_data.mouse.y - (bg.play_area.origin.y + fit.dy) * fit.ratio, bg.play_area.size.y * fit.ratio)){
-
+                            check(game_data.mouse.y - (bg.play_area.origin.y + fit.dy) * fit.ratio, bg.play_area.size.y * fit.ratio)
+                            ){
+                                
                             const xx = Math.floor((game_data.mouse.x - fit.dx * fit.ratio) / (fit.ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + fit.dx;
                             const yy = Math.floor((game_data.mouse.y - fit.dy * fit.ratio) / (fit.ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + fit.dy;
                             
                             ctx.fillStyle = 'rgba(255,250,200,.5)'
                             
-                            ctx.fillRect(xx,bg.play_area.origin.y + fit.dy,bg.play_area.cell_size.x,bg.play_area.size.y);
-                            ctx.fillRect(bg.play_area.origin.x + fit.dx,yy,bg.play_area.size.x,bg.play_area.cell_size.x);
+                            ctx.fillRect(
+                                xx,
+                                bg.play_area.origin.y + fit.dy,
+                                bg.play_area.cell_size.x,
+                                bg.play_area.size.y
+                            );
+
+                            ctx.fillRect(
+                                bg.play_area.origin.x + fit.dx,
+                                yy,
+                                bg.play_area.size.x,
+                                bg.play_area.cell_size.y
+                            );
                         }
 
                         ctx.restore();
                     }
 
                     (await sort).forEach(e => e.draw(ctx));
+                    if(this.entities.control.draw) this.control.entities.draw();
+
+                    if(this.DEBUG){
+                        const bg = this.level;
+
+                        ctx.save();
+                        ctx.scale(bg.fit_data.ratio, bg.fit_data.ratio);
+
+                        
+                        ctx.fillStyle = '#f44a'
+                        ctx.fillRect(
+                            (game_data.mouse.x - bg.fit_data.dx * bg.fit_data.ratio)/bg.fit_data.ratio - 1 + bg.fit_data.dx,
+                            (game_data.mouse.y - bg.fit_data.dy * bg.fit_data.ratio)/bg.fit_data.ratio - 1 + bg.fit_data.dy,
+                            2,2
+                        )
+                        
+                        ctx.fillStyle = '#000'
+                        ctx.strokeRect(
+                            bg.play_area.origin.x + bg.fit_data.dx,
+                            bg.play_area.origin.y + bg.fit_data.dy,
+                            bg.play_area.size.x,
+                            bg.play_area.size.y
+                        );
+                        
+                        ctx.restore();
+                    }
                 }
             },
             stop : () => {
@@ -163,7 +203,8 @@ export class BattleScene extends Scene{
         this.entities = {
             fixed : [...data.entities.fixed],
             freed : [...data.entities.freed],
-            projc : []
+            projc : [...data.entities.projc],
+            control : {...data.entities.control}
         };
 
         (this.loading = Promise.all([
