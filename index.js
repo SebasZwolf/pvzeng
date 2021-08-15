@@ -4,8 +4,6 @@ import { Scene, BattleScene } from './src/ecs/scene.js';
 import guiComponent from './components/gui.js'
 import { almanac } from './objects/alamanc.js';
 import { game_data } from './src/game_data.js';
-import { base } from './val.js';
-
 
 !Array.prototype.choose && Object.defineProperty(Array.prototype, 'choose', {
     value: function() { return this[Math.floor(Math.random()*this.length)]; }
@@ -31,8 +29,6 @@ const step = function(scn, {brakes}){
         this.vx -= dist * Math.cos(a);
         this.vy -= dist * Math.sin(a);
     }
-
-    //game_data.mouse.button.released.includes(0) && console.log('released');
 };
 
 const elements =(n)=>{
@@ -45,6 +41,9 @@ const elements =(n)=>{
 
     return arr;
 }
+
+console.log(window.location.hostname);
+const base = "";
 
 const scene = new BattleScene('test_scene', {
     entities : {
