@@ -31,9 +31,9 @@ export class Scene{
     constructor(tag, data = {}){
         this.tag = tag ?? 'def_scene';
 
+        this.#onplay = data.play;
         this.#onstep = data.step;
         this.#onstop = data.stop;
-        this.#onplay = data.play;
 
         this.DEBUG = data.DEBUG;
         
@@ -81,7 +81,6 @@ export class BattleScene extends Scene{
     constructor(tag, data){
         console.log('BattleScene\'s been born!');
         super(tag, {
-            ...data,
             play : (ctx)=>{
                 const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.level.img.width),Math.ceil(ctx.canvas.height / this.level.img.height));
                 this.level.fit_data = {
@@ -94,16 +93,18 @@ export class BattleScene extends Scene{
                 const all = [...this.entities.fixed, ...this.entities.freed, ...this.entities.projc];
                 const mov = [...this.entities.freed, ...this.entities.projc];
                     
-                this.quadtree.clear();
-                mov.forEach(e=>this.quadtree.insert(e));
-
+                //this.quadtree.clear();
+                //mov.forEach(e=>this.quadtree.insert(e));
+                    
                 //STEP
                 const d_step = {
-                    brakes
+                    stop : brakes
                 }
                 
-                all.forEach(e => e.step( this, d_step));
-                if(this.entities.control.step) this.entities.control.step();
+                all.forEach(e => e.step( e, d_step));
+
+                if(this.entities.control.step)
+                    this.entities.control.step();
 
                 //PHYSICS
                 mov.forEach(e=>{
@@ -115,11 +116,11 @@ export class BattleScene extends Scene{
                     e.vx = apro(e.vx, 0, Math.max(Math.abs(e.vx) / 5, 2));
                     e.vy = apro(e.vy, 0, Math.max(Math.abs(e.vy) / 5, 2));
                 })
+                
+                const sort = new Promise((succ)=>succ(mov.sort((a,b)=>a.y - b.y)));
 
                 //RENDER
                 {
-                    const sort = new Promise((succ)=>succ(all.sort((a,b)=>a.y - b.y)));
-
                     ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
                     {
                         const bg = this.level;
@@ -140,52 +141,49 @@ export class BattleScene extends Scene{
                             const xx = Math.floor((game_data.mouse.x - fit.dx * fit.ratio) / (fit.ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + fit.dx;
                             const yy = Math.floor((game_data.mouse.y - fit.dy * fit.ratio) / (fit.ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + fit.dy;
                             
-                            ctx.fillStyle = 'rgba(255,250,200,.5)'
+                            ctx.fillStyle = '#fec7';
                             
                             ctx.fillRect(
-                                xx,
-                                bg.play_area.origin.y + fit.dy,
-                                bg.play_area.cell_size.x,
-                                bg.play_area.size.y
+                                xx, bg.play_area.origin.y + fit.dy,
+                                bg.play_area.cell_size.x, bg.play_area.size.y
                             );
 
                             ctx.fillRect(
-                                bg.play_area.origin.x + fit.dx,
-                                yy,
-                                bg.play_area.size.x,
-                                bg.play_area.cell_size.y
+                                bg.play_area.origin.x + fit.dx, yy,
+                                bg.play_area.size.x, bg.play_area.cell_size.y
                             );
                         }
+
+                        this.entities.fixed.sort((a,b)=>a.y-b.y);
+
+                        this.entities.fixed.forEach(e =>ctx.drawImage(e.sprite,
+                            (e.x +.5) * bg.play_area.cell_size.x + bg.play_area.origin.x + fit.dx - e.sprite.width * .5,
+                            (e.y + 1) * bg.play_area.cell_size.y + bg.play_area.origin.y + fit.dy - e.sprite.height)
+                        );
+
+                        /*this.entities.fixed.forEach(e =>ctx.fillRect(
+                            e.x * bg.play_area.cell_size.x + bg.play_area.origin.x + fit.dx,
+                            e.y * bg.play_area.cell_size.y + bg.play_area.origin.y + fit.dy, 4, 4)
+                        );*/
 
                         ctx.restore();
                     }
 
-                    (await sort).forEach(e => e.draw(ctx));
+                    //(await sort).forEach(e => e.draw(ctx));
+
                     if(this.entities.control.draw) this.control.entities.draw();
 
                     if(this.DEBUG){
                         const bg = this.level;
-
-                        ctx.save();
-                        ctx.scale(bg.fit_data.ratio, bg.fit_data.ratio);
-
                         
-                        ctx.fillStyle = '#f44a'
-                        ctx.fillRect(
-                            (game_data.mouse.x - bg.fit_data.dx * bg.fit_data.ratio)/bg.fit_data.ratio - 1 + bg.fit_data.dx,
-                            (game_data.mouse.y - bg.fit_data.dy * bg.fit_data.ratio)/bg.fit_data.ratio - 1 + bg.fit_data.dy,
-                            2,2
-                        )
-                        
-                        ctx.fillStyle = '#000'
+                        ctx.strokeStyle = '#f00'
+                        ctx.lineWidth = 2;
                         ctx.strokeRect(
-                            bg.play_area.origin.x + bg.fit_data.dx,
-                            bg.play_area.origin.y + bg.fit_data.dy,
-                            bg.play_area.size.x,
-                            bg.play_area.size.y
+                            (bg.play_area.origin.x + bg.fit_data.dx)*bg.fit_data.ratio,
+                            (bg.play_area.origin.y + bg.fit_data.dy)*bg.fit_data.ratio,
+                            (bg.play_area.size.x)*bg.fit_data.ratio,
+                            (bg.play_area.size.y)*bg.fit_data.ratio
                         );
-                        
-                        ctx.restore();
                     }
                 }
             },
@@ -195,16 +193,16 @@ export class BattleScene extends Scene{
             }
         });
 
-        this.quadtree = new QT.QuadTree(new QT.Box(0, 0, 1600, 900),{
+        /*this.quadtree = new QT.QuadTree(new QT.Box(0, 0, 1600, 900),{
             capacity : 4,
             arePointsEqual: (point1, point2) => point1.x === point2.x && point1.y === point2.y
-        });
+        });*/
 
         this.entities = {
-            fixed : [...data.entities.fixed],
-            freed : [...data.entities.freed],
-            projc : [...data.entities.projc],
-            control : {...data.entities.control}
+            fixed :     [...data.entities.fixed],
+            freed :     [...data.entities.freed],
+            projc :     [...data.entities.projc],
+            control :   {...data.entities.control}
         };
 
         (this.loading = Promise.all([

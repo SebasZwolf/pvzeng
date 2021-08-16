@@ -1,33 +1,51 @@
 const canv = document.createElement('canvas');
-canv.width = 6;
+canv.width = 18;
 canv.height = 9;
+
 const ctx = canv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
 
-const img = ctx.createImageData(6, 9);
+ctx.lineWidth = 1; ctx.strokeStyle = '#084';
 
-console.log(img.data);
+ctx.fillStyle = '#0f8';
+ctx.fillRect(0,0,6, ctx.canvas.height);
+ctx.strokeRect(0.5,0.5,5, ctx.canvas.height - 1);
 
-//for (const i in img.data)
-img.data.forEach(i =>{
-        i = 128;
-    });
+ctx.fillStyle = '#f80';
+ctx.fillRect(6,0,6, ctx.canvas.height);
+ctx.strokeRect(6.5,0.5,5, ctx.canvas.height - 1);
 
-ctx.putImageData(img,0,0);
+ctx.fillStyle = '#80f';
+ctx.fillRect(12,0,6, ctx.canvas.height);
+ctx.strokeRect(12.5,0.5,5, ctx.canvas.height - 1);
 
-const fimg = await createImageBitmap(img);
+const [iddle, shoot, ...rest] = await Promise.all([
+    createImageBitmap(ctx.getImageData( 0,0,6,ctx.canvas.height)),
+    createImageBitmap(ctx.getImageData( 6,0,6,ctx.canvas.height)),
+    createImageBitmap(ctx.getImageData(12,0,6,ctx.canvas.height))
+]);
 
 export const almanac = ({game_data})=>({
     plants : {
         peashoter : {
-            step : function(scene, brakes){
-            },
             type : 'r',
+            create : (self, scene) =>{
+
+            },
+            step : (self, scene) =>{
+                self.tt = self.tt ?? 0;
+                self.tt ++;
+
+                if(self.tt % 200 == 0) { self.sprite = shoot; setTimeout(()=>self.sprite = iddle, 300)}
+            },
             anims : {
                 iddle : {
-                    img : fimg
+                    img : iddle,
+                    dx : 6,
                 },
                 shoot : {
-
+                    img : shoot,
+                    dx : 6
                 }
             }
         }

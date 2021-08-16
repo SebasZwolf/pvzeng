@@ -22,11 +22,6 @@ const prepDom = _d => {
     _canv.width     = _d.canvas.w;
     _canv.height    = _d.canvas.h;
     _canv.tabIndex  = 0;
-    
-    /*_canv.draggable = true;
-    _canv.ondrag = (e)=>console.log(e);
-    _canv.ondragstart = (e)=>console.log(e);
-    _canv.ondragover = (e)=>e.preventDefault();*/
 
     const _gui  = document.createElement("gui");
     _gui.setAttribute('v-on:css', 'css');
@@ -93,9 +88,6 @@ const defineInputs = (canv)=>{
         back_data.keyboard.released.push(code);
         //return false;
     }
-
-    /*canv.ondrop     = (e) =>console.log('drop: ', e);
-    canv.ondragover = (e)=>e.preventDefault();*/
 
     canv.oncontextmenu = (e)=>false;
 }

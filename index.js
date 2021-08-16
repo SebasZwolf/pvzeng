@@ -46,22 +46,31 @@ const elements =(n)=>{
     return arr;
 }
 
-const base = 'sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '';
+const createPlant = (base, x, y) =>({
+    x, y, sprite : base.anims.iddle.img,
+    ...base
+});
+
+Object.entries(createPlant(almanac.plants.peashoter, 0, 0)).forEach(([key, value])=>console.log(`${key}:\t`, almanac.plants.peashoter[key] ? almanac.plants.peashoter[key] === value : value ));
 
 const scene = new BattleScene('test_scene', {
     entities : {
-        fixed : [],
+        fixed : [
+            createPlant(almanac.plants.peashoter, 0, 1),
+            createPlant(almanac.plants.peashoter, 0, 2),
+            createPlant(almanac.plants.peashoter, 0, 3),
+        ],
         freed : elements(10),
         projc : [],
         control : {
-            step: (scn)=>{
+            step: (self, scn)=>{
                 game_data.keyboard.pressed.includes('Enter') && console.log(scn.quadtree.getTree())
             }
         }
     },
     level : {
         cname : "def_level",
-        image : base + "/objects/assets/def_map.bmp",
+        image : ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + "/objects/assets/def_map.bmp",
         play_area : {
             origin : { x : 48, y : 27},
             matrix : [
@@ -97,3 +106,7 @@ const Game = new Engine({
 });
 
 Game.ready.then(i => i());
+
+Game.App.$children[0].money++;
+
+console.log(Game.App.$children[0].money);
