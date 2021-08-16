@@ -32,15 +32,20 @@ const template = /*html*/`
             <span>l l</span>
         </button>
     </div>
-    <div class="plant-deck" @wheel="({path, deltaY : dy})=>path[path.length - 8].scrollBy(0, dy)">
-        <div class="plant-card" draggable="true" @dragstart="drag($event, index)" v-for="(item, index) in plants" :key="index" @click="seed_pick(index)">
-            <div class="content">
-                <img src="${src}" draggable="false" style="height:107%; position: relative; top: -7%; display: inline-block;"/>
-                <div class="edge"></div>
+
+    <div class="side-deck">
+        <button class="pvz-btn" @click="(e)=>e.target.parentElement.children[1].scrollBy({top:-124, behavior: 'smooth'})">&#10151;</button>
+        <div class="plant-deck" @wheel="({path, deltaY : dy})=>{path[path.length - 9].scrollBy(0, dy)}">
+            <div v-for="(item, index) in plants" :key="index"
+                class="plant-card" draggable="true"
+                @dragstart="drag($event, index)" @click="seed_pick(index)">
+                <div class="content"><img src="${src}" draggable="false"/><div class="edge"></div></div>
+                <span class="label">{{item}}</span>
             </div>
-            <span class="label">{{item}}</span>
         </div>
+        <button class="pvz-btn" @click="(e)=>e.target.parentElement.children[1].scrollBy({top: 124, behavior: 'smooth'})">&#10151;</button>
     </div>
+    
     <div class="bottom-deck">
         <div style="flex: 1"></div>
         <div class="usables">
@@ -65,7 +70,7 @@ const css = /*css*/`
 }
 
 .bottom-deck{
-    min-height: 48px;
+    min-height: 72px;
     display: flex;
     gap: 4px;
 }
@@ -265,20 +270,26 @@ const css = /*css*/`
     line-height: 1;
     font-size: 22px;
     width: 60px;
-    padding-right: 12px;
     text-align: right;
 }
 
-.plant-deck{
-    background-color: transparent;
-
-    flex : 1;
+.side-deck{
     width: 125px;
+    overflow : hidden;
 
-    padding-right: 15px;
+    display: flex;
+    flex-direction: column;
+    padding-right: 2px;
+    gap: 4px;
+}
+
+.plant-deck{
+    flex : 1;
+
     padding-bottom: 2px;
-    overflow-x: visible;
-    overflow-y: hidden;
+    padding-right: 12px;
+
+    overflow: hidden;
     
     display: flex;
     flex-direction : column;
@@ -288,9 +299,7 @@ const css = /*css*/`
 .plant-card {
     ---bc : #eed;
 
-    flex-shrink: 0;
-
-    width: 100%;
+    min-height: 56px;
     aspect-ratio: 20/10;
 
     background-color: var(---bc);
@@ -308,13 +317,13 @@ const css = /*css*/`
     overflow : hidden;
 
     transition: transform .3s ease-out;
+    display: flex;
 }
 
 .plant-card > .content{
     position : relative;
 
     width : 100%;
-    height : 100%;
 
     background-image: 
         linear-gradient(
@@ -326,6 +335,9 @@ const css = /*css*/`
     border: dashed #000 1px;
 }
 
+.plant-card > .content > img{
+    height: 107%; position: relative; top: -7%; display: inline-block;
+}
 .plant-card > .content > .edge{
     position: absolute;
     bottom : -1px;

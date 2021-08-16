@@ -61,7 +61,6 @@ const scene = new BattleScene('test_scene', {
             createPlant(almanac.plants.peashoter, 0, 3),
         ],
         freed : elements(10),
-        projc : [],
         control : {
             step: (self, scn)=>{
                 game_data.keyboard.pressed.includes('Enter') && console.log(scn.quadtree.getTree())

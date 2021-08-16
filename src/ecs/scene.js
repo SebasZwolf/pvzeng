@@ -199,9 +199,9 @@ export class BattleScene extends Scene{
         });*/
 
         this.entities = {
-            fixed :     [...data.entities.fixed],
-            freed :     [...data.entities.freed],
-            projc :     [...data.entities.projc],
+            fixed :     data.entities.fixed ?? [],
+            freed :     data.entities.freed ?? [],
+            projc :     data.entities.projc ?? [],
             control :   {...data.entities.control}
         };
 
