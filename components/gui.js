@@ -22,7 +22,7 @@ const template = /*html*/`
         </div>
         <div class="ind">
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
-            <span class="label">{{money}}</span>
+            <span class="label">{{power}}</span>
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
         </div>
         <button class="pvz-btn sq">
@@ -271,6 +271,10 @@ const css = /*css*/`
     font-size: 22px;
     width: 60px;
     text-align: right;
+    margin-right: 4px;
+}
+.ind > .label:last-child{
+    padding-right: 8px;
 }
 
 .side-deck{
@@ -382,43 +386,49 @@ const css = /*css*/`
 
 const flags =  Math.ceil(Math.random()*10) + 1;
 
+export const giface = {
+    plants : [
+        100,200,200,75,10,20,10,15,75,85,60,75
+    ],
+    flags,
+    cflags : Math.round(flags / 2),
+    progress : 10,
+    power : 0,
+    money : 0,
+    usables : [
+        {
+            color : '#9ee', cost : '100', amount : 1, icon : '❆'
+        },
+        {
+            color : '#fe3', cost : '120', amount : 2, icon : '⇡'
+        },
+        {
+            color : '#f86', cost : '175', amount : 0, icon : '☀'
+        },
+        {
+            color : '#86f', cost : '125', amount : 0, icon : '↯'
+        },
+    ]
+}
+
 export default{
     name : "gui",
     template,
     data: ()=>({
         game_data, //IMPORTANT
-        plants : [
-            100,200,200,75,10,20,10,15,75,85,60,75
-        ],
-        flags,
-        cflags : Math.round(flags / 2),
-        progress : 10,
-        power : 0,
-        money : 0,
-        usables : [
-            {
-                color : '#9ee', cost : '100', amount : 1, icon : '❆'
-            },
-            {
-                color : '#fe3', cost : '120', amount : 2, icon : '⇡'
-            },
-            {
-                color : '#f86', cost : '175', amount : 0, icon : '☀'
-            },
-            {
-                color : '#86f', cost : '125', amount : 0, icon : '↯'
-            },
-        ]
+        ...giface,
     }),
     methods:{
-        flagactive(i){
-            return (i >= this.cflags )
-        },
         seed_pick(i){
             this.power += this.plants[i];
+            this.$emit('game',{
+                type : 'seed',
+                index : i
+            })
         },
         drag(e, id){
             this.$el.style.pointerEvents = 'initial';
+            
             e.dataTransfer.setData("text", id);
             const img = e.target.firstChild.firstChild.src;
 
@@ -426,11 +436,10 @@ export default{
             node.src = img;
             node.style.width = '48px';
             node.style.position = 'absolute';
-            node.style.top = '-1000%';
+            node.style.top  = '-1000%';
             node.style.left = '-1000%';
 
             document.body.appendChild(node);
-
             setTimeout(()=>document.body.removeChild(node));
 
             e.dataTransfer.setDragImage(node,24,36);

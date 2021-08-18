@@ -24,5 +24,6 @@
     pointer-events: none;
     overflow: hidden;
 }
+
 .game-window > *:last-child > div{pointer-events: none;}
 

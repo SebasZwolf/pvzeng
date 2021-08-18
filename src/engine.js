@@ -1,6 +1,10 @@
 import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.esm.browser.min.js'
 import {game_data, back_data} from './game_data.js'
 
+import guiPlugin from './gui-plugin.js';
+
+Vue.use(guiPlugin);
+
 import {Manager} from './manager.js'
 
 const _aux_data = {
@@ -9,7 +13,6 @@ const _aux_data = {
     stores :    null,
     css :       null,
     store :     null,
-    guiComponent : ()=>import(/* webpackPrefetch: true */ '/components/gui.js'),
 };
 
 const prepDom = _d => {
@@ -23,8 +26,12 @@ const prepDom = _d => {
     _canv.height    = _d.canvas.h;
     _canv.tabIndex  = 0;
 
-    const _gui  = document.createElement("gui");
-    _gui.setAttribute('v-on:css', 'css');
+    const _guicomp  = document.createElement("gui-router");
+    _guicomp.setAttribute('v-on:css', 'css');
+    _guicomp.setAttribute('v-on:update', '()=>console.log("updated!!!")');
+
+    /*const _gui  = document.createElement("gui");
+    _gui.setAttribute('v-on:css', 'css');*/
 
     const _icss  = document.createElement("link");
     _icss.href   = "./src/init.css";
@@ -41,7 +48,7 @@ const prepDom = _d => {
     _ccsss.type   = "text/css";
     _ccsss.textContent = "{{ccss}}";
     
-    [_canv, _icss, _ccss, _ccsss, _gui].forEach(_i => _el.appendChild(_i));
+    [_canv, _icss, _ccss, _ccsss, _guicomp, /*_gui*/].forEach(_i => _el.appendChild(_i));
 
     _d.gui  = _el;
 
@@ -94,6 +101,9 @@ const defineInputs = (canv)=>{
 
 export class Engine{
     constructor(_d){
+        
+        const {scene} = _d;
+
         const addProm = (name)=>this.#proms.promises.push(new Promise((succ) => this.#proms[name] = succ));
         const endProm = (k, a)=>{this.#proms[k](a); this[k] = a};
         
@@ -117,21 +127,18 @@ export class Engine{
             console.log('%cVuex has been activated with enabled!', 'color: #6d6')
         }else
             delete _r.store
-        
+            
         let App = new Vue({
             el: _r.gui,
             data : ()=>({
                 ccss : ''
             }),
-            components:{
-                gui : _r.guiComponent
-            },
             mounted(){
                 endProm('App', this);
             },
             methods:{
                 css(tag){
-                    this.ccss += tag;
+                    this.ccss = tag;
                 }
             },
             store: _r.store
@@ -142,7 +149,7 @@ export class Engine{
 
         defineInputs(canv);
     
-        this.Manager    = new Manager(canv.getContext('2d'), _r.scene); 
+        this.Manager    = new Manager(canv.getContext('2d'), scene, App.$children[0]); 
         this.ready      = new Promise(s=>Promise.all(this.#proms.promises).then(()=>s(this.Manager.ignite)));
     }
 
