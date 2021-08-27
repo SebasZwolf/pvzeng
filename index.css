@@ -17,6 +17,10 @@ div{
 }
 .gui-window > * {margin: 0}
 
+.game-window > :first-child{
+    opacity: .75;
+}
+
 .game-window > :first-child:focus{
-    background-color: rgb(255, 219, 205);
+    opacity: 1;
 }

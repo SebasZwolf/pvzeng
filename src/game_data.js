@@ -2,11 +2,11 @@ export const game_data = {
     mouse:{
         //xx : 0, yy : 0,
         x : 0, y : 0,
-        button : {...[false,false,false,false,false], pressed : [], released : []}
+        button : {...[false,false,false,false,false], true : [], false : []}
     },
     keyboard:{
-        pressed : [],
-        released : []
+        true  : [],
+        false : [],
     },
     misc : {
         drag : false,
@@ -26,8 +26,8 @@ Object.defineProperty(game_data.mouse, 'y',{
 })*/
 
 export const back_data = {
-    mouse : { pressed : [], released : [] },
-    keyboard : { pressed : [], released : [] },
+    mouse : { true : [], false : [] },
+    keyboard : { true : [], false : [] },
     misc : {
         drop : false
     }
@@ -36,24 +36,34 @@ export const back_data = {
 export const updateData = ()=>{
     const mb = game_data.mouse.button;
         
-    mb.pressed  = back_data.mouse.pressed;
-    mb.released = back_data.mouse.released;
+    mb.true  = back_data.mouse.true;
+    back_data.mouse.true  = [];
 
-    game_data.keyboard.pressed  = back_data.keyboard.pressed;
-    game_data.keyboard.released = back_data.keyboard.released;
+    mb.false = back_data.mouse.false;
+    back_data.mouse.false = [];
 
-    back_data.keyboard.pressed  = [];
-    back_data.keyboard.released = [];
+    game_data.keyboard.true  = back_data.keyboard.true;
+    back_data.keyboard.true  = [];
     
-    back_data.mouse.pressed     = [];
-    back_data.mouse.released    = [];
+    game_data.keyboard.false = back_data.keyboard.false;
+    back_data.keyboard.false = [];
 
     if(back_data.misc.drop) {
-        back_data.misc.drop = false;
-
-        game_data.misc.drag = false;
+        back_data.misc.drop = game_data.misc.drag = false;
         game_data.misc.drop = true;
     }else
         if(!game_data.misc.drop) game_data.misc.drop = false;
-    
+}
+
+export const manage_data = {
+    mouse : {
+        down : (button)=>{
+            game_data.mouse.button[button] = true;
+            back_data.mouse.pressed.push(button);
+        },
+        up : (button) =>{
+            game_data.mouse.button[button] = false;
+            back_data.mouse.released.push(button);
+        }
+    }
 }

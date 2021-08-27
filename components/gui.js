@@ -1,4 +1,4 @@
-import {game_data, back_data} from '../src/game_data.js'
+import {back_data} from '../src/game_data.js'
 
 const src = 'https://www.pngkey.com/png/full/283-2831746_insta-icon-instagram.png'
 const flag = 'https://cdn.iconscout.com/icon/free/png-512/flag-575-433737.png';
@@ -6,23 +6,21 @@ const flag = 'https://cdn.iconscout.com/icon/free/png-512/flag-575-433737.png';
 const detectMob = ()=>[/Android/i,/webOS/i,/iPhone/i,/iPad/i,/iPod/i,/BlackBerry/i,/Windows Phone/i].some((toMatchItem) => navigator.userAgent.match(toMatchItem));
 
 const template = /*html*/`
-<div class="gui-window" @drop="drop" @dragover="over">
-    <div class="top-deck">
+<div class="gui-window">
+    <div class="top-deck" v-with="game_iface">
         <div class="ind">
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
-            <span class="label">{{money}}</span>
+            <span class="label">{{ game_iface.sun_power }}</span>
         </div>
         <div style="width: 100%; display: flex;">
             <div class="level-progress">
-                <div :style="{ width: progress + '%' }"><img src="${src}"/></div>
-                <div>
-                    <div v-for="(flag, index) in flags" :key="index" :class="{ flagup : index < cflags}"></div>
-                </div>
+                <div :style="{ width: game_iface.progress + '%' }"><img src="${src}"/></div>
+                <div><div v-for="(flag) in game_iface.flags" :key="flag" :class="{ flagup : (flag - 1) < cflags}"></div></div>
             </div>
         </div>
         <div class="ind">
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
-            <span class="label">{{power}}</span>
+            <span class="label">{{ game_iface.money }}</span>
             <img src="${src}" style="width: 24px; vertical-align: bottom; transform: scale(1.5,1.5)"/>
         </div>
         <button class="pvz-btn sq">
@@ -38,7 +36,7 @@ const template = /*html*/`
         <div class="plant-deck" @wheel="({path, deltaY : dy})=>{path[path.length - 9].scrollBy(0, dy)}">
             <div v-for="(item, index) in plants" :key="index"
                 class="plant-card" draggable="true"
-                @dragstart="drag($event, index)" @click="seed_pick(index)">
+                @dragstart="drag($event, index)" @click="seed_pick(index)" @dragend="drag($event, index)" >
                 <div class="content"><img src="${src}" draggable="false"/><div class="edge"></div></div>
                 <span class="label">{{item}}</span>
             </div>
@@ -49,10 +47,10 @@ const template = /*html*/`
     <div class="bottom-deck">
         <div style="flex: 1"></div>
         <div class="usables">
-            <button class="pvz-btn cn" v-for="(item, index) in usables">
+            <button class="pvz-btn cn" v-for="(item, index) in usables" @click="if(item.amount > 0) item.amount -= 1;">
                 <span class="icon" :style="{backgroundColor : item.color}">{{item.icon}}</span>
                 <span class="cost">{{item.cost}}</span>
-                <span class="amnt">{{item.amount}}</span>
+                <span class="amnt" :style="{ color : item.amount > 0 ? 'white' : 'red' }">{{item.amount}}</span>
             </button>
         </div>
         <button class="pvz-btn rd">
@@ -86,6 +84,7 @@ const css = /*css*/`
     
     ---btnc : #7b9;
 }
+.pvz-btn > *{pointer-events: none;}
 
 .pvz-btn.rd{
     background-color: var(---btnc);
@@ -145,12 +144,12 @@ const css = /*css*/`
     z-index: 1;
     color: #000; font-weight: 600;
     border-radius: 4px;
-
 }
 
 .pvz-btn.cn > span.amnt::before{
     content: 'x';
 }
+
 .pvz-btn.cn > span.amnt{
     position: absolute;
     bottom: 50%; right: -20px; text-align: left; width: 40px;
@@ -186,35 +185,27 @@ const css = /*css*/`
 }
 
 .level-progress{
-    border: 6px solid #0008;
-    padding: 2px 0px;
-    border-radius: 8px;
     box-sizing: content-box;
 
-    margin: auto;
-    width: 50%;
-    max-width: 260px;
+    border: 6px solid #0008; border-radius: 8px;
+    margin: auto; padding: 2px 0px;
 
     position: relative;
+    width: 100%; max-width: 260px;
     height: 12px;
 }
 
 .level-progress > div:last-child{
-    position: absolute;
-    top: 0; left : 0; bottom: 0; right: 0;
-    display: flex;
-    flex-direction: row-reverse;
+    position: absolute; top: 0; left : 0; bottom: 0; right: 0;
+    display: flex; flex-direction: row-reverse;
 }
 
 .level-progress > div > div{
     flex: 1;
-    line-height: 1;
-    font-size: 28px;
+    line-height: 1; font-size: 28px;
     
-    font-weight: 800;
-    letter-spacing: -1em;
+    font-weight: 800; letter-spacing: -1em;
 }
-
 
 .level-progress > div > div::before{content: '⚑'; color: #f26; }
 .level-progress > div > div::after {content: '⚐'; color: #000; }
@@ -301,6 +292,7 @@ const css = /*css*/`
 }
 
 .plant-card {
+    outline : none;
     ---bc : #eed;
 
     min-height: 56px;
@@ -384,89 +376,71 @@ const css = /*css*/`
 }
 `
 
-const flags =  Math.ceil(Math.random()*10) + 1;
-
-export const giface = {
-    plants : [
-        100,200,200,75,10,20,10,15,75,85,60,75
-    ],
-    flags,
-    cflags : Math.round(flags / 2),
-    progress : 10,
-    power : 0,
-    money : 0,
-    usables : [
-        {
-            color : '#9ee', cost : '100', amount : 1, icon : '❆'
-        },
-        {
-            color : '#fe3', cost : '120', amount : 2, icon : '⇡'
-        },
-        {
-            color : '#f86', cost : '175', amount : 0, icon : '☀'
-        },
-        {
-            color : '#86f', cost : '125', amount : 0, icon : '↯'
-        },
-    ]
-}
-
-export default{
+export default ({game_data, game_iface})=>({
     name : "gui",
     template,
     data: ()=>({
         game_data, //IMPORTANT
-        ...giface,
+        game_iface,
+        plants : [
+            100,200,200,75,10,20,10,15,75,85,60,75
+        ],
+        usables : [
+            {
+                color : '#9ee', cost : '100', amount : 1, icon : '❆'
+            },
+            {
+                color : '#fe3', cost : '120', amount : 5, icon : '⇡'
+            },
+            {
+                color : '#f86', cost : '175', amount : 0, icon : '☀'
+            },
+            {
+                color : '#86f', cost : '125', amount : 0, icon : '↯'
+            },
+        ]
     }),
+    props : {
+    },
+    computed : {
+        cflags : function() {
+            return Math.round( this.game_iface.flags * this.game_iface.progress / 100);
+        },
+    },
     methods:{
         seed_pick(i){
-            this.power += this.plants[i];
+            this.game_iface.sun_power += this.plants[i];
             this.$emit('game',{
                 type : 'seed',
                 index : i
-            })
+            });
         },
         drag(e, id){
-            this.$el.style.pointerEvents = 'initial';
-            
-            e.dataTransfer.setData("text", id);
-            const img = e.target.firstChild.firstChild.src;
-
-            const node = document.createElement('img');
-            node.src = img;
-            node.style.width = '48px';
-            node.style.position = 'absolute';
-            node.style.top  = '-1000%';
-            node.style.left = '-1000%';
-
-            document.body.appendChild(node);
-            setTimeout(()=>document.body.removeChild(node));
-
-            e.dataTransfer.setDragImage(node,24,36);
+            if(e.type === "dragend"){
+                back_data.misc.drop = true;
+                return;
+            };
 
             game_data.misc.drag = true;
-        },
-        drop(e){
-            e.preventDefault();
-            e.target.style.pointerEvents = null;
-            const data = e.dataTransfer.getData("text");
-            
-            back_data.misc.drop = true;
-        },
-        over: (e)=>{
-            e.preventDefault();
 
-            game_data.mouse.x = Math.ceil(e.offsetX * game_data.misc.ratio);
-            game_data.mouse.y = Math.ceil(e.offsetY * game_data.misc.ratio);
+            const img = e.target.firstChild.firstChild.src;
+            
+            const node = document.body.appendChild(Object.assign(document.createElement('img'), { src : img }));
+            Object.assign(node.style, { width : '48px', position : 'absolute', top : '-100%', left : '-100%' });
+            
+            setTimeout(_=>document.body.removeChild(node));
+            
+            e.dataTransfer.setData("text", id);
+            e.dataTransfer.setDragImage(node,24,36);
         }
     },
     mounted(){
-        console.log(this.cflags, this.flags);
         this.$emit('css', css);
-        const intv = setInterval(()=>this.progress = (this.progress + 1) % 100, 1000);
+        const intv = setInterval(()=>{
+            this.game_iface.progress = this.game_iface.progress >= 100 ? 0 : ++this.game_iface.progress;
+            //Math.random() * 100 > 75 && clearInterval(intv);
+        }, 300);
+
+        this.bridge?.speak(this.bridge);
     },
-    computed:{
-    },
-    components:{
-    },
-}
+});
