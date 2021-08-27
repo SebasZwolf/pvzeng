@@ -4,7 +4,7 @@ import plantCard,  { css as c1_css } from './plant-card.js';
 import usableItem, { css as c2_css } from './usable-item.js';
 import powerMeter, { css as c3_css } from './power-meter.js';
 
-const src =     '/objects/assets/chrome-icon.png';
+const src = ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + '/objects/assets/chrome-icon.png';
 
 const template = /*html*/`
 <div class="gui-window">
