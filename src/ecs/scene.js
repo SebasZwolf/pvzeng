@@ -6,14 +6,15 @@ export class Scene{
     #onplay;
 
     component;
+    impediment;
 
     constructor(tag, data = {}){
         this.tag = tag ?? 'def_scene';
-        ({play : this.#onplay, stop : this.#onstop, step : this.#onstep, DEBUG : this.DEBUG} = data);
+
+        ({ play : this.#onplay, stop : this.#onstop, step : this.#onstep, DEBUG : this.DEBUG} = data);
 
         this.impediment = {
-            loading : [],
-            waiting : [],
+            loading : [], waiting : [],
             load : (promise, patient)=>{
                 this.impediment.waiting[this.impediment.loading.push(promise) - 1] = patient;
                 return this;
@@ -24,20 +25,15 @@ export class Scene{
             }
         };
                 
-        this.play = (ctx, router) => new Promise(async resolve =>{
-            console.log(router);
+        this.connect = (ctx, router) => new Promise(async resolve =>{
+            router.play(data.component);
 
-            this.impediment.load(
-                router.play(data.component),
-                solution=>this.component = solution
-                );
-
+            //WAIT FOR READY
             await this.impediment.loaded();
 
             this.#onplay?.(ctx, router);
 
             let stopped = false;
-            
             const clock_data = {
                 brakes : ()=>stopped = true,
                 ctx
@@ -46,6 +42,7 @@ export class Scene{
             let id = 0;
             const main = ()=>{
                 id = window.requestAnimationFrame(main);
+
                 this.#onstep?.(clock_data);
 
                 if(stopped){  

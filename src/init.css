@@ -1,5 +1,4 @@
 .game-window{
-    background-color: #ddf;
     position: relative;
     
     box-sizing: border-box;
@@ -9,13 +8,12 @@
     overflow: hidden;
 
     max-width: 100%;
+    outline: none;
 }
 
 .game-window > *:first-child{
     display: block;
     max-width: 100%;
-
-    outline: none;
 }
 
 .game-window > *:last-child{
@@ -26,4 +24,3 @@
 }
 
 .game-window > *:last-child > div{pointer-events: none;}
-

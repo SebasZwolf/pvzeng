@@ -1,5 +1,5 @@
+import { game_data, back_data, set_input, stepUpdate } from '../game_data.js';
 import { Scene } from "./scene.js";
-import { game_data, updateData, back_data } from '../game_data.js';
 
 const check = (c, w) => c >= 0 && c < w;
 
@@ -23,37 +23,64 @@ export function Level({ cname : code_name, image : imgURL, play_area }){
     };
 
     this.ready = handle.prom;
+
+    this.ready.then(_=>delete this.ready);
 }
 
 export class BattleScene extends Scene{
-    constructor(tag, data){ console.log('BattleScene\'s been born!');
+    constructor(tag, {component, DEBUG, connector, ...data}){
+        console.log('BattleScene\'s been born!', data);
+
+        const gdata = {
+            game_data,
+            back_data,
+            user_data : connector instanceof Function ? connector() : connector,
+            level : null,
+        }
+
         super(tag, {
-            DEBUG : data.DEBUG,
-            component : {
-                functional : true,
-                render : (h,c)=>h(data.component, { props : { game_interface : { game_data, back_data } }, on : c.listeners }, [])
-            },
-            play : (ctx)=>{
+            DEBUG,
+            component : { functional : true, render : (h, {listeners : on})=>h( component, { props : { gdata }, on }, []) },
+            
+            play : (ctx, router)=>{
                 const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.level.img.width), Math.ceil(ctx.canvas.height / this.level.img.height));
                 const _r = 1 / ratio;
 
                 this.level.fit_data = {
                     ratio,
-                    dx : Math.floor((ctx.canvas.width  * _r - this.level.img.width)  * .5),
+                    dx : Math.floor((ctx.canvas.width  * _r - this.level.img.width ) * .5),
                     dy : Math.floor((ctx.canvas.height * _r - this.level.img.height) * .5)
                 }
 
+                gdata.level = { 
+                    pos : {
+                        x : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.x + this.level.fit_data.dx) / ctx.canvas.width).toFixed(2) + '%',
+                        y : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.y + this.level.fit_data.dy) / ctx.canvas.height).toFixed(2) + '%'
+                    },
+                    siz : {
+                        x : (this.level.fit_data.ratio * 100 * this.level.play_area.size.x / ctx.canvas.width).toFixed(2) + '%',
+                        y : (this.level.fit_data.ratio * 100 * this.level.play_area.size.y / ctx.canvas.height).toFixed(2) + '%',
+                    },
+                    dim : {
+                        x : this.level.play_area.cols,
+                        y : this.level.play_area.rows,
+                    }
+                };
+
                 ctx.imageSmoothingEnabled = false;
             },
-            step : ({ctx, brakes})=>{
-                updateData();
+
+            step : ({ ctx, brakes }) =>{
+                //InputStepUpdate
+                stepUpdate();
 
                 const all = [...this.entities.fixed, ...this.entities.freed, ...this.entities.projc];
 
                 //STEP
-                this.entities.control.step && this.entities.control.step();
+                this.entities.control.step?.(this.entities.control, this, game_data);
+
                 all.forEach(e => e.step( e, {
-                    stop : brakes
+                    brakes
                 }));
 
                 //PHYSICS
@@ -90,23 +117,17 @@ export class BattleScene extends Scene{
                     this.entities.control.draw?.();
 
                     if(this.DEBUG){
-                        ctx.font = '32px Calibri'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#000';
-                        ctx.fillText(JSON.stringify(game_data.keyboard),    0, ctx.canvas.height - 36);
-                        ctx.fillText(JSON.stringify(game_data.mouse),       0, ctx.canvas.height);
-
-                        ctx.fillStyle = '#f004'
-                        ctx.fillRect(
-                            (this.level.play_area.origin.x  + this.level.fit_data.dx)*this.level.fit_data.ratio,
-                            (this.level.play_area.origin.y  + this.level.fit_data.dy)*this.level.fit_data.ratio,
-                            (this.level.play_area.size.x)   * this.level.fit_data.ratio,
-                            (this.level.play_area.size.y)   * this.level.fit_data.ratio
-                        );
+                        ctx.font = '17px Monospace'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#000';
+                        Object.entries(game_data).forEach( ([k,v], i)=>  ctx.fillText(k +': ' + JSON.stringify(v), 0, ctx.canvas.height - 16*i) );
                     }
                 }
             },
+            
             stop : () => {
                 delete this.entities.fixed;
                 delete this.entities.freed;
+                delete this.entities.projc;
+                delete this.entities.control;
             }
         });
 
@@ -115,6 +136,5 @@ export class BattleScene extends Scene{
         this.level = data.level;
 
         this.impediment.load(this.level.ready, null);
-        //this.impediment.loader(process_background(data.level), solve=>this.level = solve);
     }   
 } 

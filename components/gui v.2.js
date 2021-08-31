@@ -3,6 +3,7 @@
 import plantCard,  { css as c1_css } from './plant-card.js';
 import usableItem, { css as c2_css } from './usable-item.js';
 import powerMeter, { css as c3_css } from './power-meter.js';
+import playBoard,  { css as c4_css } from './play-board.js';
 
 const src = ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + '/objects/assets/chrome-icon.png';
 
@@ -16,27 +17,24 @@ const template = /*html*/`
         <button class="btn sq"><span>l l</span></button>
         <button class="btn sq"><span>&#10148;</span></button>
     </div>
-
     <div class="side-deck">
         <div class="plant-deck">
             <button class="scroll up"   @click="scrl($event, -1)"></button>
-            <div class="content" @wheel="({path, deltaY : dy})=>path.find(e => e.className === 'content').scrollBy({ top : Math.sign(dy) * 144, behavior : 'smooth'})">
+            <div class="content" @wheel="({path, deltaY : dy})=>path.find(e => e.className === 'content').scrollBy(0, dy)">
                 <plant-card v-for="_ in 25" :plant="{ img : '${src}', cost : _ }" @click="()=>console.log('clicked!')" @dragstart="drag" @dragend="drag"/>
             </div>
             <button class="scroll down" @click="scrl($event, +1)"> </button>
         </div>
     </div>
-    
     <div class="bottom-deck">
-        <power-meter value="2" maxvalue="5"/>
+        <power-meter value="2" maxvalue="5" @click="console.log"/>
         <div style="flex: 1"></div>
         <div class="usables">
             <usable-item v-for="(item, i) in consumables" :item="item" v-on:click="console.log(i)"></usable-item>
         </div>
         <button class="btn rd"><span>⛏️</span></button>
     </div>
-
-
+    <play-board :pbg="gdata.level" @plant="console.log" :active="dragging" />
 </div>`;
 
 const css = /*css*/`
@@ -129,7 +127,7 @@ const css = /*css*/`
         padding : 3px; border-radius : 6px; display: flex;
     }
     .btn.sq > span{
-        padding: 8px; padding-top: 20px;
+        padding: 8px; padding-top: 20px; aspect-ratio: 1;
         align-self: stretch; color: #fe2;
 
         border: 1px solid var(---btnc);
@@ -244,17 +242,13 @@ export default {
             { icon : '🔥', cost : 100, amount : 4, color : '#f81' },
             { icon : '❄️', cost : 100, amount : 4, color : '#18f' },
         ],
+        dragging : false,
     }),
     props : {
-        game_interface : {
-            type : Object,
-            default : {}
-        }
+        gdata : Object
     },
     computed : {
-        cflags : function() {
-            return Math.round( this.game_iface.flags * this.game_iface.progress / 100);
-        },
+        dragging : ()=>this.gdata.back_data.misc.drag
     },
     methods:{
         seed_pick(i){
@@ -265,28 +259,26 @@ export default {
             });
         },
         drag(e, id){
-            if(e.type[e.type.length-1] === 'd') return this.game_interface.back_data.misc.drop = true;
-
-            this.game_interface.game_data.misc.drag = true;
-                        
+            this.dragging = this.gdata.back_data.misc.drag = e.type[e.type.length-1] !== 'd';
+            if(!this.gdata.back_data.misc.drag) return;
+            
             e.dataTransfer.setData("text", id);
         },
         scrl : ({ target : { parentElement : { children : [, child,] } } }, m)=>child.scrollBy({ top: m*(40 + child.offsetHeight * .7), behavior: 'smooth'})
     },
     mounted(){
-        this.$emit('css', css + c1_css + c2_css + c3_css);
+        this.$emit('css', css + c1_css + c2_css + c3_css + c4_css);
         //const intv = setInterval(() => (++this.progress >= 100) && clearInterval(intv), 100);
-        console.log(this.game_interface);
     },
     components:{
         plantCard,
         usableItem,
         powerMeter,
+        playBoard,
         progressBar : {
             name : 'progress-bar',
             functional : true,
-            render : (h, {props : { value = '0%', flags : length = '1'} })=>{ 
-                console.log('render!');
+            render : (h, { props : { value = '0', flags : length = '1' } })=>{ 
                 const cflags = Math.floor( length * value * .01);
 
                 return h('div', { class : 'progress-bar' },[

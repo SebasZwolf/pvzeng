@@ -1,8 +1,4 @@
-import { game_data } from "../src/game_data.js";
 import { BattleScene, Level } from "../src/ecs/battle_scene.js";
-
-import {default as BattleGui} from '../components/gui.js';
-import {default as BattleGui2} from '../components/gui v.2.js';
 
 const game_iface = {
     flags       : Math.floor(Math.random()*10) + 1,
@@ -39,16 +35,17 @@ const game_iface = {
     }
 }
 
+
 export const scene = new BattleScene('test_scene', {
-    component : BattleGui2,
+    component : ()=>import('../components/gui v.2.js'),
+    connector  : _=>({
+
+    }),
     entities : {
         control : {
-            step: (self, scn)=>{
-                game_data.keyboard[true ].includes('Enter') && console.log(game_data);
-                game_data.keyboard[false].includes(' ') && (game_iface.sun_power += 100);
-
-                //if(game_data.keyboard[true ].includes('Enter')) 
-                    //scn.plants.plant( scn.almanac.plants.peashoter, Math.floor(Math.random() * 9), Math.floor(Math.random() * 5));    
+            step: (self, scn, input) =>{
+                input.keyboard[true ].includes('Enter') && console.log(game_data);
+                input.keyboard[false].includes(' ') && (game_iface.sun_power += 100);
             }
         }
     },
@@ -69,5 +66,5 @@ export const scene = new BattleScene('test_scene', {
             cols : 9,
         }
     }),
-    DEBUG: false
+    DEBUG: true
 });

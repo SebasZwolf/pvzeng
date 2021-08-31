@@ -1,69 +1,78 @@
 export const game_data = {
     mouse:{
-        //xx : 0, yy : 0,
         x : 0, y : 0,
-        button : {...[false,false,false,false,false], true : [], false : []}
+        button : {...[false,false,false,false,false], true : [], false : [] }
     },
-    keyboard:{
-        true  : [],
-        false : [],
-    },
+    keyboard:{ true  : [], false : [] },
     misc : {
+        string : "",
         drag : false,
-        drop : false,
         ratio : 1
     }
 }
 
-/*Object.defineProperty(game_data.mouse, 'x',{
-    set : function (v) { this.xx = v; if(isNaN(v) || v < 10) console.trace();},
-    get : function () { return this.xx; }
-})
-
-Object.defineProperty(game_data.mouse, 'y',{
-    set : function (v) { this.yy = v; if(isNaN(v) || v < 10) console.trace();},
-    get : function () { return this.yy; }
-})*/
-
 export const back_data = {
-    mouse : { true : [], false : [] },
+    mouse : { true :    [], false : [] },
     keyboard : { true : [], false : [] },
     misc : {
-        drop : false
+        drag : false
     }
 }
 
-export const updateData = ()=>{
+export const stepUpdate = _=>{
     const mb = game_data.mouse.button;
-        
-    mb.true  = back_data.mouse.true;
-    back_data.mouse.true  = [];
-
-    mb.false = back_data.mouse.false;
-    back_data.mouse.false = [];
-
-    game_data.keyboard.true  = back_data.keyboard.true;
-    back_data.keyboard.true  = [];
+    mb.true  = back_data.mouse.true;  mb.true .forEach( button => mb[button] = true ); back_data.mouse.true  = [];
+    mb.false = back_data.mouse.false; mb.false.forEach( button => mb[button] = false); back_data.mouse.false = [];
     
-    game_data.keyboard.false = back_data.keyboard.false;
-    back_data.keyboard.false = [];
+    const kb = game_data.keyboard;
+    kb.true  = back_data.keyboard.true;  kb.true.forEach( key => {
+        game_data.keyboard[key ] = true;
+        if(key.length === 1) game_data.misc.string = game_data.misc.string + key;
+    } );
+    game_data.misc.string = game_data.misc.string.substring( game_data.misc.string.length - 10, 10);
+    
+    back_data.keyboard.true  = [];
+    kb.false = back_data.keyboard.false; kb.false.forEach( key => game_data.keyboard[key ] = false); back_data.keyboard.false = [];
 
-    if(back_data.misc.drop) {
-        back_data.misc.drop = game_data.misc.drag = false;
-        game_data.misc.drop = true;
-    }else
-        if(!game_data.misc.drop) game_data.misc.drop = false;
+    if(game_data.misc.drag !== back_data.misc.drag) game_data.misc.drag = back_data.misc.drag;
 }
 
-export const manage_data = {
-    mouse : {
-        down : (button)=>{
-            game_data.mouse.button[button] = true;
-            back_data.mouse.pressed.push(button);
+export const set_input = ({capture = false})=>({
+    mouse : ({button, type})=>{
+        back_data.mouse[type[type.length - 1] === 'n'].push(button);
+
+        return !capture;
+    },
+    //move : ({ clientX, clientY, layerX, layerY, pageX, pageY })=>console.log({ client: {clientX, clientY}, layer: {layerX, layerY}, page: {pageX, pageY} }),
+    move : ({ offsetX : x, offsetY : y, type })=>{
+        game_data.mouse.x = Math.round((x) * game_data.misc.ratio);
+        game_data.mouse.y = Math.round((y) * game_data.misc.ratio);
+
+        //return type[type.length - 1] === 'e';
+    },
+    keyboard : ({key, type})=>{
+        const action = type[type.length - 1] === 'n'; key = key.toLowerCase();
+        if(action && (game_data.keyboard[key] ?? false)) return !capture;
+
+        back_data.keyboard[action].push(key);
+    
+        return !capture;
+    },
+    resize : (base) =>_=>game_data.misc.ratio = Math.max(base.firstElementChild.width / base.firstElementChild.offsetWidth, base.firstElementChild.height / base.firstElementChild.offsetHeight),
+})
+
+const game_hearth = {
+    input : {
+        keyboard : {
+            pressed  : code=>game_data.keyboard[true ].includes(code),
+            released : code=>game_data.keyboard[false].includes(code),
+            check    : code=>game_data.keyboard[code ] ?? false,
+            
         },
-        up : (button) =>{
-            game_data.mouse.button[button] = false;
-            back_data.mouse.released.push(button);
-        }
-    }
+        mouse : {
+            pressed  : code=>game_data.mouse.button[true ].includes(code),
+            released : code=>game_data.mouse.button[false].includes(code),
+            check    : code=>game_data.mouse.button[code ] ?? false,
+        },
+    },
 }

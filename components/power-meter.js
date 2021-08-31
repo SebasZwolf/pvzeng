@@ -1,4 +1,3 @@
-
 export const css = /*css*/`
     .power-meter{
         display: flex; flex-direction : row;
@@ -7,15 +6,18 @@ export const css = /*css*/`
         background-color: #fee;
         padding: 8px;
         box-shadow: 0 1px 2px 0px #0008;
-    }
-    .power-meter > div{
+        border-bottom : 1px solid #866;
     }
 
-    .power-meter > div:first-child{
+    .power-meter > .btn{
         margin-right: 8px; font-size : 18px;
         aspect-ratio : 1; background-color : #c8d; border : 2px solid #224; 
         padding: 6px; border-radius: 50%;
-        box-shadow: 1px 1px 4px 0px inset #0008, 0px 0px 2px 0px inset #fff;
+        box-shadow: 1px 1px 4px 0px inset #0008, 0px 0px 2px 0px inset #fff, 0px 1px 1px 0px #0008;
+    }
+    .power-meter > .btn.active{
+        transform: translateY(1px);
+        box-shadow: 0px 0px 1px 1px #0008;
     }
 
     .power-meter > div:last-child{
@@ -31,13 +33,13 @@ export const css = /*css*/`
     }
     
     .power-meter .power-box > div {
-        min-width : 16px; border-radius: 50%; aspect-ratio : 1;
+        min-width : 12px; border-radius: 50%; aspect-ratio : 1;
         background-color : #246;
         border : 2px solid #000;
     }
     .power-meter .power-box > div.on{
-        background-color : #fff;
-        box-shadow : 0 -2px 4px 1px inset #1828, 0 -2px 10px 1px inset #0f4, 0 1px 8px 1px #0f4 ;
+        background-color : #2af;
+        box-shadow : 0 -1px 8px 0px inset #0f4, 0 1px 8px 1px #0f4 ;
         border : solid #1a2; border-width: 0px 1px 2px 1px;
         transform : scale(1.2,1.2);
     }
@@ -50,9 +52,9 @@ export default {
         value : Number,
         maxvalue : Number,
     },
-    render : (h, { props : { maxvalue, value }}) =>
+    render : (h, { props : { maxvalue, value }, listeners}) =>
         h('div', { class : 'power-meter'}, [
-            h('div', { class : ''}, '🍆'),
+            h('button', { class : 'btn', on : { click : listeners?.click }}, '🍆'),
             h('div', { class : ''},[
                 h('div', { class : 'power-box' },
                     Array.from({ length : maxvalue }).map((_, i) =>h('div', { class : i < value ? 'on' : '' }))),

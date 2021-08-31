@@ -25,8 +25,8 @@ export class Engine{
             
             const [_canv, _icss, _dcss] = [
                 Object.assign(document.createElement("canvas"), { width : window.canvas.w, height :  window.canvas.h }),
-                Object.assign(document.createElement("link"),{ href : "./src/init.css", type : "text/css", rel  : "stylesheet"}),
-                Object.assign(document.createElement("link"),{ href : window.css, type : "text/css", rel  : "stylesheet"})
+                Object.assign(document.createElement("link"),   { type : "text/css", rel  : "stylesheet", href : "./src/init.css", }),
+                Object.assign(document.createElement("link"),   { type : "text/css", rel  : "stylesheet", href : window.css, })
             ].map(e =>{ e.setAttribute('v-once', true); return e; });
             
             _canv.setAttribute('ref', 'canvas');
