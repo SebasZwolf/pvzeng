@@ -2,48 +2,44 @@ export const css=/*css*/`
 .game-board {
     position : absolute;
     display: grid;
+    overflow: hidden;
+    box-sizing : border-box;
 }
-.game-board.active > .cell { 
-    pointer-events : initial;
+.game-board > .cell {
+    opacity : 0;
+    
+    box-sizing: border-box;
     position: relative;
-}
 
-.game-board.active > .cell.active{
-    opacity : 1;
+    box-shadow: 0 0px 8px 0 #000a;
 }
+.game-board.active { border: 2px solid #f004; }
+.game-board.active > .cell { pointer-events : initial; }
+.game-board.active > .cell.active{ opacity : 1; }
 
 .game-board.active > .cell.active::before,
 .game-board.active > .cell.active::after{
     content : '';
     position: absolute;
+    pointer-events: none;
 
-    top : 50%;
-    transform : translateY(-50%);
-    border : solid;
+    ---vx : 1; ---vy : 1;
+
+    top : 0; left : 0; right : 0; bottom : 0;
+    transform : scale(var(---vx), var(---vy));
+    background-color: #fff6;
 
 }
 
-.game-board.active > .cell.active::before{
-    left : -75%;
-    border-width: 8px 0px 8px 14px;
-    border-color: #fff0 #fff0 #fff0 #fffa;
+.game-board.active > .cell.active::before{ ---vx : 20; 
+    box-shadow: 0 2px 4px 0 #0004;
 }
-
-.game-board.active > .cell.active::after{
-    right : -75%;
-    border-width: 8px 14px 8px 0px;
-    border-color: #fff0 #fffa #fff0 #fff0;
-}
-
-.game-board > .cell {
-    border: 2px dashed #fffa;
-    background-color : #fff8;
-    opacity : 0;
-
-    box-sizing: border-box;
+.game-board.active > .cell.active::after{  ---vy : 20; 
+    box-shadow: 0 0px 4px 0 #0004;
 }
 `
-const reset = ()=>{};
+
+const dcell = 'cell', acell = 'cell active';
 
 export default{
     functional : true,
@@ -58,14 +54,13 @@ export default{
         },
         on : { dragover : e=>e.preventDefault() }
     }, Array.from({ length : dim.x * dim.y }).map((_,i)=>h('div', {
-            class : 'cell',
+            class : dcell,
             on : {
                 drop  : ({target})=>{
-                    target.className = 'cell';
-                    lst?.plant({ cell : i});
+                    target.className = dcell; lst?.plant({ cell : i});
                 },
-                dragenter : ({target})=>{ target.className = 'cell active' },
-                dragleave : ({target})=>{ target.className = 'cell' }
+                dragenter : ({target})=>{ target.className = acell },
+                dragleave : ({target})=>{ target.className = dcell }
             }
         }, '' )))
 }

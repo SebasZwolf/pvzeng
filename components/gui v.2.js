@@ -21,7 +21,7 @@ const template = /*html*/`
         <div class="plant-deck">
             <button class="scroll up"   @click="scrl($event, -1)"></button>
             <div class="content" @wheel="({path, deltaY : dy})=>path.find(e => e.className === 'content').scrollBy(0, dy)">
-                <plant-card v-for="_ in 25" :plant="{ img : '${src}', cost : _ }" @click="()=>console.log('clicked!')" @dragstart="drag" @dragend="drag"/>
+                <plant-card v-for="_ in 25" :plant="{ img : '${src}', cost : _ }" @click="click" @dragstart="drag" @dragend="drag"/>
             </div>
             <button class="scroll down" @click="scrl($event, +1)"> </button>
         </div>
@@ -248,14 +248,17 @@ export default {
         gdata : Object
     },
     computed : {
-        dragging : ()=>this.gdata.back_data.misc.drag
     },
     methods:{
-        seed_pick(i){
-            this.game_iface.sun_power += this.plants[i];
+        click(e){
+            e.stopPropagation();
+
+            if(!this.dragging) window.addEventListener('click', ()=>this.dragging = false, { once : true });
+            this.dragging = true;
+
             this.$emit('game',{
                 type : 'seed',
-                index : i,
+                index : e,
             });
         },
         drag(e, id){
