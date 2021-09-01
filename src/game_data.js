@@ -64,15 +64,16 @@ export const set_input = ({capture = false})=>({
 const game_hearth = {
     input : {
         keyboard : {
-            pressed  : code=>game_data.keyboard[true ].includes(code),
-            released : code=>game_data.keyboard[false].includes(code),
-            check    : code=>game_data.keyboard[code ] ?? false,
-            
+            check    : Object.assign(code=>game_data.keyboard[code ] ?? false,{
+                pressed  : code=>game_data.keyboard[true ].includes(code),
+                released : code=>game_data.keyboard[false].includes(code),
+            }),
         },
         mouse : {
-            pressed  : code=>game_data.mouse.button[true ].includes(code),
-            released : code=>game_data.mouse.button[false].includes(code),
-            check    : code=>game_data.mouse.button[code ] ?? false,
+            check    : Object.assign(code=>game_data.mouse.button[code ] ?? false,{
+                pressed  : code=>game_data.mouse.button[true ].includes(code),
+                released : code=>game_data.mouse.button[false].includes(code),
+            }),
         },
     },
 }
