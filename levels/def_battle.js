@@ -17,14 +17,14 @@ export const scene = new BattleScene('test_scene', {
         },
         fixed : [
             create_plant(Peashoter, 0, 0),
-            create_plant(Peashoter, 1, 0),
-            create_plant(Peashoter, 2, 0),
-            create_plant(Peashoter, 3, 0),
-            create_plant(Peashoter, 4, 0),
-            create_plant(Peashoter, 5, 0),
-            create_plant(Peashoter, 6, 0),
-            create_plant(Peashoter, 7, 0),
-            create_plant(Peashoter, 8, 0),
+            create_plant(Peashoter, 1, 1),
+            create_plant(Peashoter, 1, 3),
+            create_plant(Peashoter, 3, 4),
+            create_plant(Peashoter, 4, 4),
+            create_plant(Peashoter, 8, 2),
+            create_plant(Peashoter, 6, 3),
+            create_plant(Peashoter, 7, 3),
+            create_plant(Peashoter, 6, 2),
         ]
     },
     level : new Level({

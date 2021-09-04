@@ -22,14 +22,13 @@ class Peashoter extends Plant{
             this.image_index = Math.floor(Math.random()*this.current.image.n);
         });
 
-
         this.count++;
     }
 }
 
 Object.assign(Peashoter.prototype, {
     sprites : new SpriteSheetSheet({
-        base : '/objects/assets/sprites/coin_gold.png',
+        base : ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + '/objects/assets/sprites/coin_gold.png',
         sheets : [
             { name : 'iddle',   image : { dx : 0, dy : 0, w : 32, h : 32, n : 8, x : 16, y : 32 } },
             { name : 'run',     image : { dx : 0, dy : 0, w : 32, h : 32, n : 8, x : 16, y : 32 } },
