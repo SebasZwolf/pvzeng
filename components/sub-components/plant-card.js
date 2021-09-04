@@ -10,10 +10,11 @@ export const css = /*css*/`
         box-shadow: 0px 2px 2px 0px #0006;
         font-size : 1em;
     }
-    .plant-card:hover{ transform : translate(4px, 0px); }
-    .plant-card:active{ ---bc : #982; }
+    .plant-card:hover, .plant-card.active { transform : translate(4px, 0px); }
+    .plant-card:active, .plant-card.active { ---bc : #982; }
     .plant-card > .frame {
         position: relative; width: 100%; height: 100%;/* border: 1px solid #f80;*/
+        pointer-events: none;
         background-color: #0f8;
         background-image: linear-gradient(0turn, #0206 -8px, #0000 16px), linear-gradient(315deg, #0206 12px, #0000 36px);
     }
@@ -47,15 +48,22 @@ export default {
         plant : {
             type: Object,
             default: { img : null, cost : 0 }
+        },
+        active : {
+            type: Boolean,
+            default: false
         }
     },
-    render : (h, { props : { plant }, listeners : on } )=> 
-        h('div', { class : 'plant-card', attrs : { draggable : true }, on }, [
+    render : (h, { props : { plant, active }, listeners : on } )=> 
+        h('div', { class : {
+            'plant-card' : true,
+            'active' : active,
+        }, attrs : { draggable : true, 'data-i' : plant.id }, on }, [
             h('div', { class : 'frame' }, [
                 h('div', {}, [
                     h('img', { attrs : { src: plant.img } }, []),
                 ]),
-                h('div', { class : 'edge' }, '/S'),
+                h('small', { class : 'edge' }, '☀️'),
                 h('span', {}, plant.cost.toFixed(2)),
             ]),
         ])

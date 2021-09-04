@@ -27,21 +27,30 @@ export function Level({ cname : code_name, image : imgURL, play_area }){
     this.ready.then(_=>delete this.ready);
 }
 
-export class BattleScene extends Scene{
-    constructor(tag, {component, DEBUG, connector, ...data}){
-        console.log('BattleScene\'s been born!', data);
+const log = Object.assign((_log)=>log.log.push(_log),{
+    log : []
+});
 
-        const gdata = {
-            game_data,
-            back_data,
-            user_data : connector instanceof Function ? connector() : connector,
-            level : null,
-        }
+log('a');
+
+export const Interface = function({
+    
+}){
+    if(this === globalThis) return;
+
+    Object.assign(this, {
+        money : { sun : 0, coins : 0,}
+    });
+}
+
+export class BattleScene extends Scene{
+    constructor(tag, { component, DEBUG, connector, ...data }){
+        console.log('BattleScene\'s been born!', data);
 
         super(tag, {
             DEBUG,
-            component : { functional : true, render : (h, {listeners : on})=>h( component, { props : { gdata }, on }, []) },
-            
+            component : null,
+
             play : (ctx, router)=>{
                 const ratio =  Math.max(Math.ceil(ctx.canvas.width / this.level.img.width), Math.ceil(ctx.canvas.height / this.level.img.height));
                 const _r = 1 / ratio;
@@ -51,8 +60,8 @@ export class BattleScene extends Scene{
                     dx : Math.floor((ctx.canvas.width  * _r - this.level.img.width ) * .5),
                     dy : Math.floor((ctx.canvas.height * _r - this.level.img.height) * .5)
                 }
-
-                gdata.level = { 
+                
+                const level = { 
                     pos : {
                         x : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.x + this.level.fit_data.dx) / ctx.canvas.width).toFixed(2) + '%',
                         y : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.y + this.level.fit_data.dy) / ctx.canvas.height).toFixed(2) + '%'
@@ -61,12 +70,10 @@ export class BattleScene extends Scene{
                         x : (this.level.fit_data.ratio * 100 * this.level.play_area.size.x / ctx.canvas.width).toFixed(2) + '%',
                         y : (this.level.fit_data.ratio * 100 * this.level.play_area.size.y / ctx.canvas.height).toFixed(2) + '%',
                     },
-                    dim : {
-                        x : this.level.play_area.cols,
-                        y : this.level.play_area.rows,
-                    }
+                    dim : { x : this.level.play_area.cols, y : this.level.play_area.rows }
                 };
-
+                
+                this.component = { functional : true, render : (h, {listeners : on})=>h( component, { props : { gdata : { level } }, on }, []) };
                 ctx.imageSmoothingEnabled = false;
             },
 
@@ -93,24 +100,15 @@ export class BattleScene extends Scene{
                     ctx.scale(bg.fit_data.ratio, bg.fit_data.ratio);
                     ctx.drawImage(bg.img, bg.fit_data.dx, bg.fit_data.dy);
 
-                    if(game_data.misc.drag && 
-                        check(game_data.mouse.x - (bg.play_area.origin.x + bg.fit_data.dx) * bg.fit_data.ratio, bg.play_area.size.x * bg.fit_data.ratio) &&
-                        check(game_data.mouse.y - (bg.play_area.origin.y + bg.fit_data.dy) * bg.fit_data.ratio, bg.play_area.size.y * bg.fit_data.ratio)
-                        ){
-                            
-                        const xx = Math.floor((game_data.mouse.x - bg.fit_data.dx * bg.fit_data.ratio) / (bg.fit_data.ratio * bg.play_area.cell_size.x)) * bg.play_area.cell_size.x + bg.fit_data.dx;
-                        const yy = Math.floor((game_data.mouse.y - bg.fit_data.dy * bg.fit_data.ratio) / (bg.fit_data.ratio * bg.play_area.cell_size.y)) * bg.play_area.cell_size.y + bg.fit_data.dy;
-                        
-                        ctx.fillStyle = '#fec7';
-                        ctx.fillRect(xx, bg.play_area.origin.y + bg.fit_data.dy, bg.play_area.cell_size.x, bg.play_area.size.y);
-                        ctx.fillRect(bg.play_area.origin.x + bg.fit_data.dx, yy, bg.play_area.size.x, bg.play_area.cell_size.y);
-                    }
-
-                    all.sort((a,b)=>a.y-b.y);
-
-                    this.entities.fixed.forEach(e =>{
-                        ctx.drawImage(e.sprite, (e.x +.5) * bg.play_area.cell_size.x + bg.play_area.origin.x + bg.fit_data.dx - e.sprite.width * .5, (e.y + 1) * bg.play_area.cell_size.y + bg.play_area.origin.y + bg.fit_data.dy - e.sprite.height)
-                    });
+                    ctx.translate(bg.play_area.origin.x + bg.fit_data.dx + bg.play_area.cell_size.x/2, bg.play_area.origin.y + bg.fit_data.dy + bg.play_area.cell_size.y);
+                    
+                    //const now = new Date();
+                    all.sort((a,b)=>a.y-b.y).forEach(e=>e.draw( ctx, {
+                        cell : bg.play_area.cell_size,
+                    }));
+                    //console.log(new Date().getTime() - now.getTime());
+                    //this.entities.fixed.forEach((e, i) => e.base.sprites.iddle.draw(ctx, i, e.x * bg.play_area.cell_size.x, e.y * bg.play_area.cell_size.y));
+                    //this.entities.fixed.forEach(e=>e.draw(ctx));
 
                     ctx.restore();
 
@@ -131,10 +129,8 @@ export class BattleScene extends Scene{
             }
         });
 
-        const { fixed = [], freed = [], projc = [], control = {} } = data.entities;
-        this.entities = { fixed, freed, projc, control };
-        this.level = data.level;
+        this.entities = Object.assign({ fixed : [], freed : [], projc : [], control : {} }, data.entities);
 
-        this.impediment.load(this.level.ready, null);
+        this.load(data.level.ready, level=>this.level=level);
     }   
 } 

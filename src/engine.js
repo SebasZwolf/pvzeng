@@ -13,14 +13,12 @@ import ScenePlayer from './player.js';
 
 export class Engine{
     constructor(d){
-        const {scene, window, el, store : storeData = null, alamanc} = d;
+        const {scene, window : gameWindow, el, store : storeData = null, alamanc } = d;
 
         this.#proms = { promises : [] };
               
-        (( window, el ) => {
-            const _el = document.querySelector(el);
+        (( window, _el ) => {
             if(_el == null) {throw `could not find ${el} element!`;};
-
             _el.classList.add("game-window");
             
             const [_canv, _icss, _dcss] = [
@@ -30,30 +28,23 @@ export class Engine{
             ].map(e =>{ e.setAttribute('v-once', true); return e; });
             
             _canv.setAttribute('ref', 'canvas');
-                        
-            const _ccss = Object.assign(document.createElement("component"), { type : 'text/css', textContent : '{{ccss}}' });
-            _ccss.setAttribute('is', 'style');
             
             const _guic  = document.createElement("gui-router");
-            _guic.setAttribute('v-on:css', 'css');
+            _guic.setAttribute('v-on:router', 'router');
             _guic.setAttribute('ref', 'gui-router');
             
-            [_canv, _icss, _dcss, _ccss, _guic].forEach(_i => _el.appendChild(_i));
+            [_canv, _icss, _dcss, /*_ccss,*/ _guic].forEach(_i => _el.appendChild(_i));
             return _el;
-        })( window, el );
+        })( gameWindow, document.querySelector(el) );
 
         const vuexEnable = ( ( globalThis.Vuex ?? null ) && storeData );
         vuexEnable && Vue.use(Vuex);
 
         this.App = new Vue({
             el: el,
-            data : ()=>({
-                ccss : ''
-            }),
+            data : ()=>({}),
             methods:{
-                css(tag){
-                    this.ccss = tag;
-                }
+                router : e=>console.log('[router]:', e)
             },
             components :{
                 guiRouter
@@ -63,10 +54,10 @@ export class Engine{
 
         this.Player = new ScenePlayer({
             router :    this.App.$refs['gui-router'],
-            ctx :       this.App.$refs['canvas'].getContext('2d'),
-            base :      this.App.$el,
+            canvas :    this.App.$refs['canvas'],
+            base   :    this.App.$el,
+            alamanc,
             scene,
-            alamanc
         });
 
         this.#proms.promises.push(this.Player.ready);

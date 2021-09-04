@@ -1,6 +1,7 @@
 export const css=/*css*/`
 .game-board {
     position : absolute;
+    z-index : 1;
     display: grid;
     overflow: hidden;
     box-sizing : border-box;
@@ -38,8 +39,8 @@ export const css=/*css*/`
     box-shadow: 0 0px 4px 0 #0004;
 }
 `
-
-const dcell = 'cell', acell = 'cell active';
+const onn = ({target})=>{ target.className = 'cell active' };
+const off = ({target})=>{ target.className = "cell" };
 
 export default{
     functional : true,
@@ -56,13 +57,20 @@ export default{
         },
         on : { dragover : e=>e.preventDefault() }
     }, Array.from({ length : dim.x * dim.y }).map((_,i)=>h('div', {
-            class : dcell,
+            class : 'cell',
             on : {
                 drop  : ({target})=>{
-                    target.className = dcell; lst?.plant({ cell : i});
+                    lst?.plant(i);
+                    off({target});
                 },
-                dragenter : ({target})=>{ target.className = acell },
-                dragleave : ({target})=>{ target.className = dcell }
+                click  : ({target})=>{
+                    lst?.plant(i);
+                    off({target})
+                },
+                dragenter : onn,
+                dragleave : off,
+                mouseenter : onn,
+                mouseleave : off
             }
         }, '' )))
 }

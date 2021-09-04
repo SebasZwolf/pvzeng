@@ -1,9 +1,9 @@
 //import {back_data} from '../src/game_data.js'
 
-import plantCard,  { css as c1_css } from './plant-card.js';
-import usableItem, { css as c2_css } from './usable-item.js';
-import powerMeter, { css as c3_css } from './power-meter.js';
-import playBoard,  { css as c4_css } from './play-board.js';
+import plantCard,  { css as c1_css } from './sub-components/plant-card.js';
+import playBoard,  { css as c4_css } from './sub-components/play-board.js';
+import usableItem, { css as c2_css } from './sub-components/usable-item.js';
+import powerMeter, { css as c3_css } from './sub-components/power-meter.js';
 
 const src = ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + '/objects/assets/chrome-icon.png';
 
@@ -21,20 +21,27 @@ const template = /*html*/`
         <div class="plant-deck">
             <button class="scroll up"   @click="scrl($event, -1)"></button>
             <div class="content" @wheel="({path, deltaY : dy})=>path.find(e => e.className === 'content').scrollBy(0, dy)">
-                <plant-card v-for="_ in 25" :plant="{ img : '${src}', cost : _ }" @click="click" @dragstart="drag" @dragend="drag"/>
+                <plant-card v-for="_ in 25"
+                    :plant="{ img : '${src}', cost : _, id : _, selected : selected }"
+                    :active="_ == selected"
+                    @click="click"
+                    @dragstart="drag"
+                    @dragend="drag"></plant-card>
             </div>
             <button class="scroll down" @click="scrl($event, +1)"> </button>
         </div>
     </div>
     <div class="bottom-deck">
         <power-meter value="2" maxvalue="5" @click="console.log"/>
-        <div style="flex: 1"></div>
+        <div style="flex: 1; justify-content: center; text-align: center">
+            <span v-for="(a,b,c) in gdata.level">{{a}}<br></span>
+        </div>
         <div class="usables">
             <usable-item v-for="(item, i) in consumables" :item="item" v-on:click="console.log(i)"></usable-item>
         </div>
         <button class="btn rd"><span>⛏️</span></button>
     </div>
-    <play-board :pbg="gdata.level" @plant="console.log" :active="dragging" />
+    <play-board :pbg="gdata.level" :active="selected !==-1" :key="selected" @plant="plant"/>
 </div>`;
 
 const css = /*css*/`
@@ -223,11 +230,16 @@ const css = /*css*/`
     .progress-bar > .flags > .flag{
         flex : 1; font-size : 16px; line-height: 1;
     }
-`+/*css*/`
+`+/**/`
     @keyframes spin { 
         100% { 
-          transform: rotateZ(360deg);
+        --angle : 360deg;
         }
+    }
+    @property --angle {
+        syntax :        "<angle>";
+        initial-value : 0deg;
+        inherits:       false;
     }
 `
 
@@ -237,12 +249,12 @@ export default {
     data: ()=>({
         progress : 0,
         consumables : [
-            { icon : '⬆️', cost : 100, amount : 4, color : '#dfa' },
-            { icon : '⚡', cost : 100, amount : 4, color : '#a4f' },
-            { icon : '🔥', cost : 100, amount : 4, color : '#f81' },
-            { icon : '❄️', cost : 100, amount : 4, color : '#18f' },
+            { cost : 100, amount : 4, color : '#dfa', icon : '⬆️', },
+            { cost : 100, amount : 4, color : '#a4f', icon : '⚡', },
+            { cost : 100, amount : 4, color : '#f81', icon : '🔥', },
+            { cost : 100, amount : 4, color : '#18f', icon : '❄️', },
         ],
-        dragging : false,
+        selected : -1,
     }),
     props : {
         gdata : Object
@@ -250,28 +262,23 @@ export default {
     computed : {
     },
     methods:{
+        plant : function(cell){
+            console.log({cell, plant : this.selected});
+            this.selected = -1;
+        },
         click(e){
             e.stopPropagation();
 
-            if(!this.dragging) window.addEventListener('click', ()=>this.dragging = false, { once : true });
-            this.dragging = true;
-
-            this.$emit('game',{
-                type : 'seed',
-                index : e,
-            });
+            if( this.selected === -1 ) window.addEventListener('click', ()=>this.selected = -1, { once : true });
+            this.selected = e.target.dataset.i !== this.selected ? e.target.dataset.i : -1;
         },
-        drag(e, id){
-            this.dragging = this.gdata.back_data.misc.drag = e.type[e.type.length-1] !== 'd';
-            if(!this.gdata.back_data.misc.drag) return;
-            
-            e.dataTransfer.setData("text", id);
+        drag(e){
+            e.type[e.type.length-1] !== 'd' ? this.selected = e.target.dataset.i : this.selected = -1;
         },
-        scrl : ({ target : { parentElement : { children : [, child,] } } }, m)=>child.scrollBy({ top: m*(40 + child.offsetHeight * .7), behavior: 'smooth'})
+        scrl : ({target : { parentElement : {children : [, child,]}}}, m)=>child.scrollBy({ top: m*(40 + child.offsetHeight * .7), behavior: 'smooth'})
     },
-    mounted(){
-        this.$emit('css', css + c1_css + c2_css + c3_css + c4_css);
-        //const intv = setInterval(() => (++this.progress >= 100) && clearInterval(intv), 100);
+    mounted : function(){
+        this.$listeners?.css(css + c1_css + c2_css + c3_css + c4_css);
     },
     components:{
         plantCard,
@@ -283,7 +290,6 @@ export default {
             functional : true,
             render : (h, { props : { value = '0', flags : length = '1' } })=>{ 
                 const cflags = Math.floor( length * value * .01);
-
                 return h('div', { class : 'progress-bar' },[
                 h('div', { class : 'bar', style : { width : value + '%' } }, [
                     h('span', { style : { margin : '-10px', fontSize : '24px', lineHeight: '.5' } }, '🎱')

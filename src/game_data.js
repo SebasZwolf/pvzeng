@@ -59,21 +59,49 @@ export const set_input = ({capture = false})=>({
         return !capture;
     },
     resize : (base) =>_=>game_data.misc.ratio = Math.max(base.firstElementChild.width / base.firstElementChild.offsetWidth, base.firstElementChild.height / base.firstElementChild.offsetHeight),
-})
+});
 
-const game_hearth = {
+/**
+ * 
+ * @param {*} data 
+ */
+export const config = ({
+    mouse,
+    keyboard,
+    window,
+    capture
+})=>{
+    const input = set_input(capture)
+
+    mouse.onmousemove   = mouse.ondragover  = input.move;
+    mouse.onmousedown   = mouse.onmouseup   = input.mouse;
+
+    keyboard.onkeydown  = keyboard.onkeyup  = input.keyboard;
+    keyboard.oncontextmenu = _=>false;
+    
+    window.addEventListener("load", input.resize(keyboard), { once: true });
+    window.onresize  = input.resize(keyboard);
+    
+    return keyboard;
+}
+
+
+
+const game_logic = {
     input : {
-        keyboard : {
+        keyboard : Object.freeze({
             check    : Object.assign(code=>game_data.keyboard[code ] ?? false,{
                 pressed  : code=>game_data.keyboard[true ].includes(code),
                 released : code=>game_data.keyboard[false].includes(code),
             }),
-        },
-        mouse : {
+        }),
+        mouse : Object.freeze({
             check    : Object.assign(code=>game_data.mouse.button[code ] ?? false,{
                 pressed  : code=>game_data.mouse.button[true ].includes(code),
                 released : code=>game_data.mouse.button[false].includes(code),
             }),
-        },
+            get x(){ return game_data.mouse.x},
+            get y(){ return game_data.mouse.y},
+        }),
     },
 }

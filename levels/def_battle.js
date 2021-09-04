@@ -1,60 +1,38 @@
-import { BattleScene, Level } from "../src/ecs/battle_scene.js";
+import { almanac } from "../objects/alamanc.js";
+import { BattleScene, Level, Interface } from "../src/ecs/battle_scene.js";
+import { game_data } from "../src/game_data.js";
 
-const game_iface = {
-    flags       : Math.floor(Math.random()*10) + 1,
-    progress    : 0,
-    sun_power   : 0,
-    money       : 0,
+import Peashoter from "../objects/almanac/plants/peashoter.js";
 
-    triggers    : {
-        plants  : {
-            /**
-            * @typedef {{}} Plant
-            * @param {Plant} BASE the type of plant to be planted
-            * @param {Number} x the x Coordinate to be planted
-            * @param {Number} y the y Coordinate to be planted
-            */
-            plant   : function(...args){
-                this.events.plant && this.events.plant(args)
-            },
-            /**
-            * @param {Number} x the x Coordinate to be planted
-            * @param {Number} y the y Coordinate to be planted
-            */
-            unplant  : function(x, y){
-                return (this.events.unplant && this.events.unplant());
-            },
-        }
-    },
-
-    events      : {
-    },
-
-    on : function(key, callback){
-        this.events[key] = callback;
-    }
-}
-
+const create_plant = (plant, x, y)=>new plant({x,y});
 
 export const scene = new BattleScene('test_scene', {
     component : ()=>import('../components/gui v.2.js'),
-    connector  : _=>({
-
-    }),
     entities : {
         control : {
             step: (self, scn, input) =>{
                 input.keyboard[true ].includes('Enter') && console.log(game_data);
                 input.keyboard[false].includes(' ') && (game_iface.sun_power += 100);
             }
-        }
+        },
+        fixed : [
+            create_plant(Peashoter, 0, 0),
+            create_plant(Peashoter, 1, 0),
+            create_plant(Peashoter, 2, 0),
+            create_plant(Peashoter, 3, 0),
+            create_plant(Peashoter, 4, 0),
+            create_plant(Peashoter, 5, 0),
+            create_plant(Peashoter, 6, 0),
+            create_plant(Peashoter, 7, 0),
+            create_plant(Peashoter, 8, 0),
+        ]
     },
     level : new Level({
         cname : "def_level",
         image : ('sebaszwolf.github.io' === window.location.hostname ? '/pvzeng' : '') + "/objects/assets/def_map.bmp",
         play_area : {
-            origin : { x : 48, y : 27},
-            cell_size : { x : 6, y : 9},
+            origin : { x : 96, y : 54},
+            cell_size : { x : 12, y : 18},
             matrix : [
                 1,1,1,0,1,0,0,0,0,
                 1,1,1,0,1,0,0,0,0,

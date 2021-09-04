@@ -8,32 +8,30 @@ export class Scene{
     component;
     impediment;
 
-    constructor(tag, data = {}){
+    constructor(tag, { play, stop, step, DEBUG, ...data}){
         this.tag = tag ?? 'def_scene';
 
-        ({ play : this.#onplay, stop : this.#onstop, step : this.#onstep, DEBUG : this.DEBUG} = data);
+        this.#onplay = play;
+        this.#onstep = step;
+        this.#onstop = stop;
 
-        this.impediment = {
-            loading : [], waiting : [],
-            load : (promise, patient)=>{
-                this.impediment.waiting[this.impediment.loading.push(promise) - 1] = patient;
-                return this;
-            },
-            loaded : async () =>{
-                (await Promise.all(this.impediment.loading)).forEach((item, index) => this.impediment.waiting[index] && this.impediment.waiting[index](item));
-                delete this.impediment;
+        
+        this.load = Object.assign((promise, callback)=>this.load.callbacks[this.load.promises.push(promise) - 1] = callback,{
+            promises : [], callbacks : [], wait : async ()=>{
+                (await Promise.all(this.load.promises)).forEach((p,i)=>this.load.callbacks[i]?.(p));
+                return delete(this.load);
             }
-        };
-                
+        });
+
         this.connect = (ctx, router) => new Promise(async resolve =>{
-            router.play(data.component);
-
-            //WAIT FOR READY
-            await this.impediment.loaded();
-
+            
+            await this.load.wait();
+            
             this.#onplay?.(ctx, router);
+            router.play(this.component);
 
             let stopped = false;
+
             const clock_data = {
                 brakes : ()=>stopped = true,
                 ctx

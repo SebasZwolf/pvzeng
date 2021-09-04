@@ -12,7 +12,8 @@ export const css = /*css*/`
         position: relative;
         letter-spacing : -2px;
     }
-    .use-item > span{ position: absolute; }
+    .use-item > span{ position: absolute; 
+        z-index : 1;}
     .use-item > .cost{
         bottom : -25%;
         left : 0; right : 0;
@@ -30,12 +31,21 @@ export const css = /*css*/`
         font-family: monospace;
     }
     .use-item > .amnt:before{ content: 'x' }
-    .use-item:before{
-        content: ''; position: absolute;
-        top: -6px; left: -6px; bottom: -6px; right: -6px;
+    .use-item:after
+    /*.use-item:before*/{
+        content: ''; position: absolute; top: -6px; left: -6px; bottom: -6px; right: -6px;
         
-        border: 2px solid #000; border-radius: 50%; border-color: #000 #000 var(---ring) var(---ring);
-        animation: spin 10s linear infinite;
+        z-index : 0;
+        
+        --angle : 0deg;
+        animation: spin 4s linear infinite;
+    }
+    .use-item:after{
+        border: 2px solid #000;
+        border-radius: 50%;
+        border-color: #000 #000 var(---ring) var(---ring);
+        transform: rotate(var(--angle));
+        box-shadow: 0 0 10px 0px var(---ring);
     }
     .use-item:not(:last-child){ margin-right: 8px;}
     .use-item:active{
