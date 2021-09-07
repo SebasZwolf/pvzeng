@@ -26,14 +26,14 @@ Object.assign(SpriteSheet.prototype,{
     draw : function(ctx, index, x, y){
         if(!this.img) return console.log(this);
     
-        ctx.drawImage( this.img, ( index % this.image.n ) * this.image.w, 0, this.image.w, this.image.h, x - this.image.x, y - this.image.y, this.image.w, this.image.h );
+        ctx.drawImage( this.img, ( index ) * this.image.w, 0, this.image.w, this.image.h, x - this.image.x, y - this.image.y, this.image.w, this.image.h );
     }
 });
 
-export const SpriteSheetSheet = function({
+export const SpriteSheetSheet = function(
     base,
     sheets = []
-}){
+){
     const img = new Image();
     img.src = base;
     let i = true;

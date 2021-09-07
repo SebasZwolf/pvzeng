@@ -3,8 +3,6 @@ import './preparation.js';
 
 import { Engine } from './src/engine.js'
 import { scene } from './levels/def_battle.js';
-import { almanac } from './objects/alamanc.js';
-import { game_data } from './src/game_data.js';
 
 const Game = new Engine({
     window : {
@@ -18,10 +16,8 @@ const Game = new Engine({
         actions:    {},
         getters:    {},
     },
-    almanac : almanac(game_data),
+    almanac : null,
     el : '#game',
 });
-
-//(await Game.ready())();
 
 (await Game.ready)();

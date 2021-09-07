@@ -60,21 +60,28 @@ export class BattleScene extends Scene{
                     dx : Math.floor((ctx.canvas.width  * _r - this.level.img.width ) * .5),
                     dy : Math.floor((ctx.canvas.height * _r - this.level.img.height) * .5)
                 }
+                const
+                    dw = this.level.fit_data.ratio * 100 / ctx.canvas.width,
+                    dh = this.level.fit_data.ratio * 100 / ctx.canvas.height;
                 
                 const level = { 
                     pos : {
-                        x : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.x + this.level.fit_data.dx) / ctx.canvas.width).toFixed(2) + '%',
-                        y : (this.level.fit_data.ratio * 100 * (this.level.play_area.origin.y + this.level.fit_data.dy) / ctx.canvas.height).toFixed(2) + '%'
+                        x : ((this.level.play_area.origin.x + this.level.fit_data.dx) * dw).toFixed(2) + '%',
+                        y : ((this.level.play_area.origin.y + this.level.fit_data.dy) * dh).toFixed(2) + '%'
                     },
                     siz : {
-                        x : (this.level.fit_data.ratio * 100 * this.level.play_area.size.x / ctx.canvas.width).toFixed(2) + '%',
-                        y : (this.level.fit_data.ratio * 100 * this.level.play_area.size.y / ctx.canvas.height).toFixed(2) + '%',
+                        x : (this.level.play_area.size.x * dw).toFixed(2) + '%',
+                        y : (this.level.play_area.size.y * dh).toFixed(2) + '%',
                     },
                     dim : { x : this.level.play_area.cols, y : this.level.play_area.rows }
                 };
                 
                 this.component = { functional : true, render : (h, {listeners : on})=>h( component, { props : { gdata : { level } }, on }, []) };
-                ctx.imageSmoothingEnabled = false;
+
+                ctx.imageSmoothingEnabled   = false;
+                ctx.font                    = '17px Monospace';
+                ctx.textBaseline            = 'bottom';
+                ctx.fillStyle               = '#000';
             },
 
             step : ({ ctx, brakes }) =>{
@@ -92,30 +99,26 @@ export class BattleScene extends Scene{
 
                 //PHYSICS
                 //RENDER
-                ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.save();
                 {
                     const bg = this.level;
 
                     ctx.scale(bg.fit_data.ratio, bg.fit_data.ratio);
-                    ctx.drawImage(bg.img, bg.fit_data.dx, bg.fit_data.dy);
 
+                    ctx.drawImage(bg.img, bg.fit_data.dx, bg.fit_data.dy);
+                    
                     ctx.translate(bg.play_area.origin.x + bg.fit_data.dx + bg.play_area.cell_size.x/2, bg.play_area.origin.y + bg.fit_data.dy + bg.play_area.cell_size.y);
                     
-                    //const now = new Date();
                     all.sort((a,b)=>a.y-b.y).forEach(e=>e.draw( ctx, {
-                        cell : bg.play_area.cell_size,
+                        cell : this.level.play_area.cell_size,
                     }));
-                    //console.log(new Date().getTime() - now.getTime());
-                    //this.entities.fixed.forEach((e, i) => e.base.sprites.iddle.draw(ctx, i, e.x * bg.play_area.cell_size.x, e.y * bg.play_area.cell_size.y));
-                    //this.entities.fixed.forEach(e=>e.draw(ctx));
-
+                    
                     ctx.restore();
-
+                    
                     this.entities.control.draw?.();
 
                     if(this.DEBUG){
-                        ctx.font = '17px Monospace'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#000';
                         Object.entries(game_data).forEach( ([k,v], i)=>  ctx.fillText(k +': ' + JSON.stringify(v), 0, ctx.canvas.height - 16*i) );
                     }
                 }
